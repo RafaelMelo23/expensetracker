@@ -1,6 +1,6 @@
 package com.github.rafaelmelo23.expense_tracker.model;
 
-import com.github.rafaelmelo23.expense_tracker.enums.Role;
+import com.github.rafaelmelo23.expense_tracker.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -5,26 +5,28 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "salary")
-public class Salary {
+@Table(name = "user_accounting")
+public class UserAccounting {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "date", nullable = false)
-    private LocalDateTime date;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private LocalUser user;
+
+    @Column(name = "salaryDate", nullable = false)
+    private int salaryDate;
 
     @Column(name = "monthly_salary", nullable = false, precision = 19, scale = 2)
     private BigDecimal monthlySalary;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private LocalUser user;
+    @Column(name = "current_balance", nullable = false, precision = 19, scale = 2)
+    private BigDecimal currentBalance;
 
 }

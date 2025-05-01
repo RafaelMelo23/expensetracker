@@ -1,4 +1,4 @@
-package com.github.rafaelmelo23.expense_tracker.api.controller.authentication.body;
+package com.github.rafaelmelo23.expense_tracker.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -8,15 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RegistrationBody {
-
-    @NotBlank
-    @Size(max = 30)
-    private String firstName;
-
-    @NotBlank
-    @Size(max = 50)
-    private String lastName;
+public class LoginBody {
 
     @NotBlank
     @Email
@@ -27,4 +19,3 @@ public class RegistrationBody {
     @Size(min = 12, max = 72)
     private String password;
 }
-

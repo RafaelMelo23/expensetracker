@@ -1,0 +1,38 @@
+services:
+  postgres:
+    build:
+      context: ./postgres  # Directory containing the PostgreSQL Dockerfile
+      dockerfile: Dockerfile
+    container_name: postgres
+    environment:
+      POSTGRES_USER: Rafael
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: expensetracker
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-app
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/expensetracker
+      SPRING_DATASOURCE_USERNAME: Rafael
+      SPRING_DATASOURCE_PASSWORD: "secret"
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:  # Docker managed volume
+
+networks:
+  app-network:
