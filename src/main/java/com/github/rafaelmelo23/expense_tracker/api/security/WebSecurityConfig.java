@@ -17,7 +17,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain ilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         //        http.cors(cors -> cors.configurationSource(request -> {
 //            CorsConfiguration config = new CorsConfiguration();
 //            config.setAllowCredentials(true);
