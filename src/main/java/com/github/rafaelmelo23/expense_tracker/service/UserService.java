@@ -3,6 +3,7 @@ package com.github.rafaelmelo23.expense_tracker.service;
 import com.github.rafaelmelo23.expense_tracker.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
+import com.github.rafaelmelo23.expense_tracker.model.enums.Role;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class UserService {
         user.setFirstName(registrationBody.getFirstName());
         user.setLastName(registrationBody.getLastName());
         user.setPassword(hashingService.hashPassword(registrationBody.getPassword()));
+        user.setRole(Role.ROLE_USER);
 
         localUserDAO.save(user);
     }

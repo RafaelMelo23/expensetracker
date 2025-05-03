@@ -46,6 +46,6 @@ public class UserServiceController {
         jwtCookie.setMaxAge(604800);
         response.addCookie(jwtCookie);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok().body(jwt);
     }
 }

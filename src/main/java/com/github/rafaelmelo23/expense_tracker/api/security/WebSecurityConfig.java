@@ -35,11 +35,22 @@ public class WebSecurityConfig {
         http.addFilterBefore(jwtFilterSecurity, AuthorizationFilter.class);
         http.authorizeHttpRequests(authorize -> authorize
 
-                .requestMatchers("").hasRole("ADMIN")
-                .requestMatchers("").permitAll()
-                .requestMatchers("").authenticated()
-                .anyRequest().authenticated()
+//                .requestMatchers("/admin/**").hasRole("ADMIN")
 
+                // Authenticated only API mappings
+                .requestMatchers("/api/expense/**").authenticated()
+
+                // Public API mappings
+                .requestMatchers(
+                                "/api/user/**").permitAll()
+
+                // Html/Static public mappings
+                .requestMatchers("/js/**",
+                                "/css/**",
+                                "/*.html",
+                                "/").permitAll()
+
+                        .anyRequest().authenticated()
         );
 
         return http.build();

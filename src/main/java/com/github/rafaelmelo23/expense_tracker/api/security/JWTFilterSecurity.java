@@ -40,8 +40,6 @@ public class JWTFilterSecurity extends OncePerRequestFilter implements ChannelIn
             if (jwtToken != null) {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                return;
             }
 
             filterChain.doFilter(request, response);

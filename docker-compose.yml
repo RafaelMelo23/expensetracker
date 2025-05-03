@@ -1,15 +1,22 @@
+version: '3.8'
+
 services:
   postgres:
-    build:
-      context: ./postgres  # Directory containing the PostgreSQL Dockerfile
-      dockerfile: Dockerfile
+    image: postgres:15
     container_name: postgres
+    restart: always
     environment:
       POSTGRES_USER: Rafael
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: expensetracker
+
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U Rafael -d expensetracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -21,18 +28,20 @@ services:
       dockerfile: Dockerfile
     container_name: spring-app
     ports:
-      - 8080:8080
+      - "8080:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/expensetracker
-      SPRING_DATASOURCE_USERNAME: Rafael
+      SPRING_DATASOURCE_USERNAME: test
       SPRING_DATASOURCE_PASSWORD: "secret"
     networks:
       - app-network
 
 volumes:
-  postgres_data:  # Docker managed volume
+  postgres_data:
 
 networks:
   app-network:
+    driver: bridge
