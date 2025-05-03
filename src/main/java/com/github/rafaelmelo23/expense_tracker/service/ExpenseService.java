@@ -1,9 +1,7 @@
 package com.github.rafaelmelo23.expense_tracker.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.rafaelmelo23.expense_tracker.dao.ExpenseDAO;
-import com.github.rafaelmelo23.expense_tracker.dao.UserAccountingDAO;
+import com.github.rafaelmelo23.expense_tracker.model.dao.ExpenseDAO;
+import com.github.rafaelmelo23.expense_tracker.model.dao.UserAccountingDAO;
 import com.github.rafaelmelo23.expense_tracker.dto.ExpenseByMonthDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.FirstRegistryDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseDTO;
@@ -22,7 +20,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +180,37 @@ public class ExpenseService {
         return expenseByMonthDTO;
 
     }
+
+    public void updateSalaryAmount(BigDecimal salaryAmount) {
+        LocalUser user = userService.getAuthenticatedUser();
+
+        if (user == null) {
+            throw new UserException.UserNotAuthenticatedException();
+        }
+
+        userAccountingDAO.updateUserSalary(salaryAmount, user.getId());
+    }
+
+    public void updateSalaryDate(BigDecimal salaryDate) {
+        LocalUser user = userService.getAuthenticatedUser();
+
+        if (user == null) {
+            throw new UserException.UserNotAuthenticatedException();
+        }
+
+        userAccountingDAO.updateUserSalaryDate(salaryDate, user.getId());
+    }
+
+    public void addToBalance(BigDecimal increment) {
+        LocalUser user = userService.getAuthenticatedUser();
+
+        if (user == null) {
+            throw new UserException.UserNotAuthenticatedException();
+        }
+
+        userAccountingDAO.addToBalance(increment, user.getId());
+    }
+
 
     @Scheduled(cron = "0 0 0 * * *")
     public void creditMonthlySalaryMinusRecurrentExpenses() {

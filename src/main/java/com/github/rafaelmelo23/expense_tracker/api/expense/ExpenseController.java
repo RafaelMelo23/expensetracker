@@ -14,7 +14,6 @@ import java.util.List;
 @RequestMapping("/api/expense")
 public class ExpenseController {
 
-
     private final ExpenseService expenseService;
 
     public ExpenseController(ExpenseService expenseService) {
@@ -25,26 +24,40 @@ public class ExpenseController {
     public ResponseEntity<?> createExpense(@RequestBody FirstRegistryDTO registryDTO) {
 
         expenseService.firstRegistry(registryDTO);
-
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/register")
     public ResponseEntity<BigDecimal> registerExpense(@RequestBody ExpenseDTO expenseDTO) {
-
         return ResponseEntity.ok().body(expenseService.persistExpense(expenseDTO));
     }
 
     @GetMapping("/get/all")
     public ResponseEntity<List<ExpenseDTO>> getAllExpenses() {
-
         return ResponseEntity.ok().body(expenseService.getAllExpenses());
     }
 
     @GetMapping("/get/all/v2")
     public ResponseEntity<ExpenseByMonthDTO> getAllExpenses2() {
-
         return ResponseEntity.ok().body(expenseService.getYearlyExpensesByMonth());
+    }
+
+    @PutMapping("/salary/update")
+    public ResponseEntity<Void> updateSalaryAmount(@RequestParam BigDecimal salaryAmount) {
+        expenseService.updateSalaryAmount(salaryAmount);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/salary/date/update")
+    public ResponseEntity<Void> updateSalaryDate(@RequestParam BigDecimal salaryDate) {
+        expenseService.updateSalaryDate(salaryDate);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/balance/add")
+    public ResponseEntity<Void> addToBalance(@RequestParam BigDecimal increment) {
+        expenseService.addToBalance(increment);
+        return ResponseEntity.ok().build();
     }
 
 }

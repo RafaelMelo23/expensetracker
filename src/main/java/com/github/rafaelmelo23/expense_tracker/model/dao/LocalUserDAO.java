@@ -1,4 +1,4 @@
-package com.github.rafaelmelo23.expense_tracker.dao;
+package com.github.rafaelmelo23.expense_tracker.model.dao;
 
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import org.springframework.data.repository.ListCrudRepository;

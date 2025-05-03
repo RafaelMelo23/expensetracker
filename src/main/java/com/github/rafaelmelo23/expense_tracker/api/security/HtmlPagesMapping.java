@@ -11,8 +11,14 @@ public class HtmlPagesMapping {
         return "index";
     }
 
-    @GetMapping("/teste")
-    public String teste() {
-        return "test-file";
+    @GetMapping("/register")
+    public String register() {
+        return "register";
     }
+
+    @GetMapping("/login")
+    public String teste() {
+        return "login";
+    }
+
 }

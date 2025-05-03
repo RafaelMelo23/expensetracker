@@ -1,6 +1,6 @@
 package com.github.rafaelmelo23.expense_tracker.service;
 
-import com.github.rafaelmelo23.expense_tracker.dao.LocalUserDAO;
+import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.model.enums.Role;

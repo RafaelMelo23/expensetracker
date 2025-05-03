@@ -1,7 +1,7 @@
 package com.github.rafaelmelo23.expense_tracker.api.security;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.github.rafaelmelo23.expense_tracker.dao.LocalUserDAO;
+import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.service.JWTService;
 import jakarta.servlet.FilterChain;

@@ -47,7 +47,8 @@ public class WebSecurityConfig {
                 // Html/Static public mappings
                 .requestMatchers("/js/**",
                                 "/css/**",
-                                "/*.html",
+                                "/login",
+                                "/register",
                                 "/").permitAll()
 
                         .anyRequest().authenticated()
