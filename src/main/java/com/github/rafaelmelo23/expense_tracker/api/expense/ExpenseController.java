@@ -1,6 +1,6 @@
 package com.github.rafaelmelo23.expense_tracker.api.expense;
 
-import com.github.rafaelmelo23.expense_tracker.dto.ExpenseByMonthDTO;
+import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseByMonthDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.FirstRegistryDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseDTO;
 import com.github.rafaelmelo23.expense_tracker.service.ExpenseService;
@@ -38,26 +38,8 @@ public class ExpenseController {
     }
 
     @GetMapping("/get/all/v2")
-    public ResponseEntity<ExpenseByMonthDTO> getAllExpenses2() {
+    public ResponseEntity<ExpenseByMonthDTO> getAllExpensesByMonth() {
         return ResponseEntity.ok().body(expenseService.getYearlyExpensesByMonth());
-    }
-
-    @PutMapping("/salary/update")
-    public ResponseEntity<Void> updateSalaryAmount(@RequestParam BigDecimal salaryAmount) {
-        expenseService.updateSalaryAmount(salaryAmount);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/salary/date/update")
-    public ResponseEntity<Void> updateSalaryDate(@RequestParam BigDecimal salaryDate) {
-        expenseService.updateSalaryDate(salaryDate);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/balance/add")
-    public ResponseEntity<Void> addToBalance(@RequestParam BigDecimal increment) {
-        expenseService.addToBalance(increment);
-        return ResponseEntity.ok().build();
     }
 
 }

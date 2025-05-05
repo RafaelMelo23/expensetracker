@@ -2,7 +2,7 @@ package com.github.rafaelmelo23.expense_tracker.service;
 
 import com.github.rafaelmelo23.expense_tracker.model.dao.ExpenseDAO;
 import com.github.rafaelmelo23.expense_tracker.model.dao.UserAccountingDAO;
-import com.github.rafaelmelo23.expense_tracker.dto.ExpenseByMonthDTO;
+import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseByMonthDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.FirstRegistryDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseDTO;
 import com.github.rafaelmelo23.expense_tracker.exception.ExpenseException;
@@ -50,8 +50,8 @@ public class ExpenseService {
             throw new ExpenseException.InvalidExpenseDataException("first registry payload is null");
         }
 
-        UserAccounting accounting = buildUserAccounting(registryDTO, user);
-        List<Expense> expenses = buildExpenses(registryDTO.getExpenses(), user);
+        UserAccounting accounting = persistUserAccounting(registryDTO, user);
+        List<Expense> expenses = persistExpenses(registryDTO.getExpenses(), user);
 
         try {
             userAccountingDAO.save(accounting);
@@ -61,7 +61,7 @@ public class ExpenseService {
         }
     }
 
-    private List<Expense> buildExpenses(List<ExpenseDTO> expenseDTOs, LocalUser user) {
+    private List<Expense> persistExpenses(List<ExpenseDTO> expenseDTOs, LocalUser user) {
         return expenseDTOs.stream().map(e -> {
             if (e.getExpenseAmount() == null) {
                 throw new ExpenseException.InvalidExpenseDataException("one of the initial expenses is missing amount");
@@ -79,7 +79,7 @@ public class ExpenseService {
         }).toList();
     }
 
-    private UserAccounting buildUserAccounting(FirstRegistryDTO dto, LocalUser user) {
+    private UserAccounting persistUserAccounting(FirstRegistryDTO dto, LocalUser user) {
         UserAccounting accounting = new UserAccounting();
         accounting.setUser(user);
         accounting.setSalaryDate(dto.getSalaryDate());
@@ -180,37 +180,6 @@ public class ExpenseService {
         return expenseByMonthDTO;
 
     }
-
-    public void updateSalaryAmount(BigDecimal salaryAmount) {
-        LocalUser user = userService.getAuthenticatedUser();
-
-        if (user == null) {
-            throw new UserException.UserNotAuthenticatedException();
-        }
-
-        userAccountingDAO.updateUserSalary(salaryAmount, user.getId());
-    }
-
-    public void updateSalaryDate(BigDecimal salaryDate) {
-        LocalUser user = userService.getAuthenticatedUser();
-
-        if (user == null) {
-            throw new UserException.UserNotAuthenticatedException();
-        }
-
-        userAccountingDAO.updateUserSalaryDate(salaryDate, user.getId());
-    }
-
-    public void addToBalance(BigDecimal increment) {
-        LocalUser user = userService.getAuthenticatedUser();
-
-        if (user == null) {
-            throw new UserException.UserNotAuthenticatedException();
-        }
-
-        userAccountingDAO.addToBalance(increment, user.getId());
-    }
-
 
     @Scheduled(cron = "0 0 0 * * *")
     public void creditMonthlySalaryMinusRecurrentExpenses() {

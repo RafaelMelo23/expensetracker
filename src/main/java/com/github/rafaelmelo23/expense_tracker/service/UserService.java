@@ -1,5 +1,6 @@
 package com.github.rafaelmelo23.expense_tracker.service;
 
+import com.github.rafaelmelo23.expense_tracker.dto.auth.UserDTO;
 import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
@@ -37,15 +38,20 @@ public class UserService {
         localUserDAO.save(user);
     }
 
-    public String loginUser(String email, String hashedPassword) {
+    public UserDTO loginUser(String email, String hashedPassword) {
 
+        UserDTO userDTO = new UserDTO();
         String trimmedEmail = email.trim();
+        String jwtToken;
 
         LocalUser user = localUserDAO.findByEmailIgnoreCase(trimmedEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (hashingService.checkPassword(hashedPassword, user.getPassword())) {
-            return jwt.generateJWT(user);
+            jwtToken = jwt.generateJWT(user);
+
+            userDTO.toDTO(user);
+            return userDTO;
         }
 
         throw new IllegalArgumentException("Invalid password");

@@ -1,8 +1,6 @@
-package com.github.rafaelmelo23.expense_tracker.dto;
+package com.github.rafaelmelo23.expense_tracker.dto.expense;
 
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseDTO;
 import lombok.Getter;
 import lombok.Setter;
 

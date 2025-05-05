@@ -3,7 +3,10 @@ package com.github.rafaelmelo23.expense_tracker.api.controller.authentication;
 
 import com.github.rafaelmelo23.expense_tracker.dto.auth.LoginBody;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
+import com.github.rafaelmelo23.expense_tracker.dto.auth.UserDTO;
+import com.github.rafaelmelo23.expense_tracker.dto.expense.UserAdditionsDTO;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
+import com.github.rafaelmelo23.expense_tracker.service.AccountingService;
 import com.github.rafaelmelo23.expense_tracker.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,10 +14,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserServiceController {
 
     private final UserService userService;
+    private final AccountingService accountingService;
 
     @PostMapping("/register")
     public ResponseEntity<LocalUser> registerUser(@RequestBody @Valid RegistrationBody registrationBody) {
@@ -31,21 +35,27 @@ public class UserServiceController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginBody loginBody, HttpServletResponse response) {
+    public ResponseEntity<UserDTO> loginUser(@RequestBody LoginBody loginBody, HttpServletResponse response) {
 
-        String jwt = userService.loginUser(loginBody.getEmail(), loginBody.getPassword());
+        UserDTO dto = userService.loginUser(loginBody.getEmail(), loginBody.getPassword());
 
-        if (jwt == null) {
+        if (dto.getJwtToken() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Cookie jwtCookie = new Cookie("JWT", jwt);
+        Cookie jwtCookie = new Cookie("JWT", dto.getJwtToken());
         jwtCookie.setHttpOnly(true);
         jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(604800);
+        jwtCookie.setMaxAge(1209600);
         response.addCookie(jwtCookie);
 
-        return ResponseEntity.ok().body(jwt);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @GetMapping("/get/balance")
+    public ResponseEntity<BigDecimal> getBalanceAdditions() {
+
+        return ResponseEntity.ok().body(accountingService.getBalance());
     }
 }

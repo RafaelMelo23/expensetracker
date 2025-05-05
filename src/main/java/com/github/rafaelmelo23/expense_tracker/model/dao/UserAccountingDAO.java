@@ -33,6 +33,10 @@ public interface UserAccountingDAO extends ListCrudRepository<UserAccounting, Lo
 
     @Modifying
     @Transactional
-    @Query("UPDATE UserAccounting ua SET ua.salaryDate = ua.salaryDate + :salaryDate WHERE ua.user.id = :userId")
-    void addToBalance(@Param("salaryDate") BigDecimal salaryDate, @Param("userId") Long userId);
+    @Query("UPDATE UserAccounting ua SET ua.salaryDate = ua.salaryDate + :amount WHERE ua.user.id = :userId")
+    void addToBalance(@Param("amount") BigDecimal amount, @Param("userId") Long userId);
+
+    BigDecimal findCurrentBalanceByUser_Id(Long userId);
+
+
 }
