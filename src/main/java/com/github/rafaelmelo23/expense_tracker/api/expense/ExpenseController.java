@@ -3,6 +3,7 @@ package com.github.rafaelmelo23.expense_tracker.api.expense;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseByMonthDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.FirstRegistryDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseDTO;
+import com.github.rafaelmelo23.expense_tracker.model.enums.ExpenseCategory;
 import com.github.rafaelmelo23.expense_tracker.service.ExpenseService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,11 @@ public class ExpenseController {
 
     @PostMapping("/register")
     public ResponseEntity<BigDecimal> registerExpense(@RequestBody ExpenseDTO expenseDTO) {
+
+        if (expenseDTO.getExpenseCategory() == null || expenseDTO.getExpenseCategory().toString().isEmpty()) {
+            expenseDTO.setExpenseCategory(ExpenseCategory.OTHER);
+        }
+
         return ResponseEntity.ok().body(expenseService.persistExpense(expenseDTO));
     }
 

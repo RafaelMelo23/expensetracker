@@ -38,7 +38,12 @@ public class WebSecurityConfig {
 //                .requestMatchers("/admin/**").hasRole("ADMIN")
 
                 // Authenticated only API mappings
-                .requestMatchers("/api/expense/**").authenticated()
+                .requestMatchers("/api/expense/**"
+                        ).authenticated()
+
+                // Authenticated Html/Static mappings
+                .requestMatchers("/first/registry"
+                        ).authenticated()
 
                 // Public API mappings
                 .requestMatchers(

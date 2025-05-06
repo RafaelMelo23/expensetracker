@@ -1,5 +1,6 @@
 package com.github.rafaelmelo23.expense_tracker.api.security;
 
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
@@ -43,11 +44,11 @@ public class JWTFilterSecurity extends OncePerRequestFilter implements ChannelIn
             }
 
             filterChain.doFilter(request, response);
-        } catch (JWTVerificationException e) {
-
+        } catch (JWTDecodeException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid or Expired JWT token");
+            response.getWriter().write("Unvalid or expired token");
         }
+
     }
 
     private UsernamePasswordAuthenticationToken checkTokenAndAuth(String token) {
@@ -76,8 +77,8 @@ public class JWTFilterSecurity extends OncePerRequestFilter implements ChannelIn
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 return authentication;
-            } catch (JWTVerificationException e) {
-                throw new JWTVerificationException("Invalid/Expired JWT Token");
+            } catch (JWTDecodeException e) {
+
             }
         }
         return null;

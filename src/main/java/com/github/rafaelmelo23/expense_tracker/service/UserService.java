@@ -5,6 +5,8 @@ import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.model.enums.Role;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ public class UserService {
     private final LocalUserDAO localUserDAO;
     private final HashingService hashingService;
     private final JWTService jwt;
+    Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public UserService(LocalUserDAO localUserDAO, HashingService hashingService, JWTService jwt) {
         this.localUserDAO = localUserDAO;
@@ -38,23 +41,28 @@ public class UserService {
         localUserDAO.save(user);
     }
 
-    public UserDTO loginUser(String email, String hashedPassword) {
+    public UserDTO loginUser(String email, String rawPassword) {
 
-        UserDTO userDTO = new UserDTO();
-        String trimmedEmail = email.trim();
-        String jwtToken;
-
-        LocalUser user = localUserDAO.findByEmailIgnoreCase(trimmedEmail)
+        LocalUser user = localUserDAO.findByEmailIgnoreCase(email.trim())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (hashingService.checkPassword(hashedPassword, user.getPassword())) {
-            jwtToken = jwt.generateJWT(user);
+        String raw = (rawPassword == null ? "" : rawPassword.trim());
 
-            userDTO.toDTO(user);
-            return userDTO;
+        System.out.printf("Comparing raw '%s' against hash '%s'%n", raw, user.getPassword());
+
+        boolean ok = hashingService.checkPassword(raw, user.getPassword());
+        System.out.println("Password match? " + ok);
+
+        if (!ok) {
+            throw new IllegalArgumentException("Invalid credentials");
         }
 
-        throw new IllegalArgumentException("Invalid password");
+        String jwtToken = jwt.generateJWT(user);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail(user.getEmail());
+        userDTO.setJwtToken(jwtToken);
+
+        return userDTO;
     }
 
     public LocalUser getAuthenticatedUser() {

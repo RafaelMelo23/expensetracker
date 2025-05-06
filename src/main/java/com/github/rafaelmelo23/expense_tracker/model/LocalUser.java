@@ -30,4 +30,11 @@ public class LocalUser {
     @Column(name = "role", nullable = false)
     private Role role = Role.ROLE_USER;
 
+    @Column(name = "is_first_login")
+    private Boolean isFirstLogin = true;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_accounting_id")
+    private UserAccounting userAccounting;
+
 }

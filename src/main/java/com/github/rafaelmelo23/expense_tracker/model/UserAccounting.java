@@ -29,4 +29,8 @@ public class UserAccounting {
     @Column(name = "current_balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal currentBalance;
 
+    @OneToOne(orphanRemoval = true)
+    @JoinColumn(name = "local_user_id", unique = true)
+    private LocalUser localUser;
+
 }

@@ -27,7 +27,7 @@ public class ExpenseDTO {
     public static ExpenseDTO toDTO(Expense expense) {
         ExpenseDTO dto = new ExpenseDTO();
         dto.setExpenseName(expense.getName());
-        dto.setExpenseCategory(expense.getCategory());
+        dto.setExpenseCategory(expense.getCategory() != null ? expense.getCategory() : ExpenseCategory.OTHER);
         dto.setExpenseAmount(expense.getAmount());
         dto.setExpenseDate(expense.getDate());
         dto.setDescription(expense.getDescription());

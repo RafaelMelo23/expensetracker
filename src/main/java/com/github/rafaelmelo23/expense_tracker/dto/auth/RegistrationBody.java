@@ -24,7 +24,7 @@ public class RegistrationBody {
     private String email;
 
     @NotBlank
-    @Size(min = 12, max = 72)
+    @Size(min = 8, max = 72)
     private String password;
 }
 

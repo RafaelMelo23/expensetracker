@@ -1,6 +1,7 @@
 package com.github.rafaelmelo23.expense_tracker.service;
 
 import com.github.rafaelmelo23.expense_tracker.model.dao.ExpenseDAO;
+import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.model.dao.UserAccountingDAO;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseByMonthDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.FirstRegistryDTO;
@@ -34,11 +35,13 @@ public class ExpenseService {
     private static final int currentYear = LocalDate.now().getYear();
     private final LocalDateTime startOfTheYear = LocalDateTime.of(currentYear, 1, 1, 0, 0);
     private final LocalDateTime endOfTheYear = LocalDateTime.of(currentYear, 12, 31, 23, 59);
+    private final LocalUserDAO localUserDAO;
 
-    public ExpenseService(ExpenseDAO expenseDAO, UserService userService, UserAccountingDAO userAccountingDAO) {
+    public ExpenseService(ExpenseDAO expenseDAO, UserService userService, UserAccountingDAO userAccountingDAO, LocalUserDAO localUserDAO) {
         this.expenseDAO = expenseDAO;
         this.userService = userService;
         this.userAccountingDAO = userAccountingDAO;
+        this.localUserDAO = localUserDAO;
     }
 
     public void firstRegistry(FirstRegistryDTO registryDTO) {
@@ -49,6 +52,8 @@ public class ExpenseService {
         if (registryDTO == null) {
             throw new ExpenseException.InvalidExpenseDataException("first registry payload is null");
         }
+
+        localUserDAO.setUserFirstLoginToFalse(user.getId());
 
         UserAccounting accounting = persistUserAccounting(registryDTO, user);
         List<Expense> expenses = persistExpenses(registryDTO.getExpenses(), user);

@@ -23,7 +23,6 @@ public class AccountingService {
     private final UserService userService;
     private final UserAccountingDAO userAccountingDAO;
     private final UserAdditionsLogDAO userAdditionsLogDAO;
-    private final ExpenseService expenseService;
 
     public List<UserAdditionsDTO> getAllYearAdditions(int year) {
         LocalDateTime startOfTheYear = LocalDateTime.of(year, 1, 1, 0, 0);
