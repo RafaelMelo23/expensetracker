@@ -1,275 +1,859 @@
- function generateMonthData() {
-    const daysInMonth = 30;
-    const data = [];
-    let initialBudget = 50.00;
-
-    for (let day = 1; day <= daysInMonth; day++) {
-    let diminishingFactor;
-
-    if (day <= 10) {
-    diminishingFactor = 0.93 + (Math.random() * 0.04);
-} else if (day <= 20) {
-    diminishingFactor = 0.88 + (Math.random() * 0.04);
-} else {
-    diminishingFactor = 0.80 + (Math.random() * 0.05);
-}
-
-    const randomVariation = (Math.random() * 0.06) - 0.03;
-    const effectiveFactor = diminishingFactor + randomVariation;
-
-    if (day === 1) {
-    data.push({ day, reais: initialBudget });
-} else {
-    const previousValue = data[day - 2].reais;
-    let newValue = previousValue * effectiveFactor;
-
-    if (day < 25) {
-    newValue = Math.max(newValue, (daysInMonth - day) * 0.3);
-} else {
-    newValue = Math.max(newValue, 0.10);
-}
-
-    data.push({ day, reais: parseFloat(newValue.toFixed(2)) });
-}
-}
-
-    return data;
-}
-
-    const budgetData = generateMonthData();
-
-    class WaveAnimation {
+class FinancialCalendar {
     constructor() {
-    this.colorStops = {
-    high: { threshold: 0.33, color: '#2ecc71' },
-    medium: { threshold: 0.66, color: '#f1c40f' },
-    low: { threshold: 0.9, color: '#e67e22' },
-    critical: { threshold: 1.0, color: '#e74c3c' }
-};
+        this.expenses = [];
+        this.yearlyAdditions = [];
+        this.balance = 0;
+        this.dailyBudget = 0;
+        this.currentDate = new Date();
+        this.selectedMonth = this.currentDate.getMonth();
+        this.selectedYear = this.currentDate.getFullYear();
+        this.colorStops = {
+                high: { threshold: 0.33, color: '#45c849' },
+                medium: { threshold: 0.66, color: '#FFC107' },
+                low: { threshold: 0.9, color: '#FF9800' },
+                critical: { threshold: 1.0, color: '#F44336' }
+            };
 
-    this.normalizeBudgetData();
-    this.renderCalendar();
-}
+            this.borderColors = {
+                current: '#2196F3',
+                expense: '#F44336',
+                addition: '#4CAF50'
+            };
 
-    normalizeBudgetData() {
-    const values = budgetData.map(item => item.reais);
-    const maxReais = Math.max(...values);
-    const minReais = Math.min(...values);
-    const range = maxReais - minReais;
+        this.init();
+    }
 
-    budgetData.forEach(item => {
-    item.normalizedValue = 1 - ((item.reais - minReais) / range);
-    item.color = this.getColorForValue(item.normalizedValue);
-    item.waveHeight = 20 + (item.normalizedValue * 65);
-});
-}
+    async init() {
+        try {
+            await this.fetchBalance();
+            await this.fetchYearlyAdditions(this.selectedYear);
+            await this.fetchMonthData();
+            this.renderCalendar();
+            this.setupEventListeners();
+        } catch (error) {
+            console.error('Error initializing calendar:', error);
+        }
+    }
 
-    getColorForValue(value) {
-    if (value <= this.colorStops.high.threshold) {
-    return this.colorStops.high.color;
-} else if (value <= this.colorStops.medium.threshold) {
-    return this.colorStops.medium.color;
-} else if (value <= this.colorStops.low.threshold) {
-    return this.colorStops.low.color;
-} else {
-    return this.colorStops.critical.color;
-}
-}
+    async fetchBalance() {
+        try {
+            const response = await fetch('/api/user/get/balance');
+            if (!response.ok) {
+                throw new Error('Failed to fetch balance');
+            }
+
+            this.balance = await response.json();
+            this.calculateDailyBudget();
+        } catch (error) {
+            console.error('Error fetching balance:', error);
+        }
+    }
+
+    async fetchMonthData() {
+        try {
+            const response = await fetch('/api/expense/get/all/v2');
+            if (!response.ok) {
+                throw new Error('Failed to fetch expense data');
+            }
+
+            const data = await response.json();
+            this.expenses = data; // Store the full structure
+
+            // Log the loaded data
+            console.log('Loaded expense data:', this.expenses);
+
+            // Get current month name for debugging
+            const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            const currentMonthName = monthNames[this.selectedMonth];
+
+            if (this.expenses.monthlyExpenses && this.expenses.monthlyExpenses[currentMonthName]) {
+                console.log(`Found expenses for ${currentMonthName}:`,
+                    this.expenses.monthlyExpenses[currentMonthName].length);
+            } else {
+                console.log(`No expenses found for ${currentMonthName}`);
+            }
+        } catch (error) {
+            console.error('Error fetching month data:', error);
+        }
+    }
+
+    calculateDailyBudget() {
+        const daysInMonth = new Date(this.selectedYear, this.selectedMonth + 1, 0).getDate();
+
+        if (daysInMonth > 0) {
+            this.dailyBudget = this.balance / daysInMonth;
+        } else {
+            this.dailyBudget = 0;
+        }
+    }
+
+    normalizeBudgetData(dayData) {
+        let normalizedValue = 0;
+        let waveHeight = 0;
+
+        if (this.dailyBudget <= 0) {
+            normalizedValue = 1;
+            waveHeight = 100;
+        }
+        else if (dayData.remainingBudget <= 0) {
+            normalizedValue = 1;
+            waveHeight = 100;
+        }
+        else {
+            const percentageRemaining = Math.min(100, (dayData.remainingBudget / this.dailyBudget) * 100);
+            normalizedValue = 1 - (percentageRemaining / 100);
+            waveHeight = 85 - ((percentageRemaining / 100) * 65);
+        }
+
+        normalizedValue = Math.max(0, Math.min(1, normalizedValue));
+        waveHeight = Math.max(20, Math.min(100, waveHeight));
+
+        const color = this.getColorForValue(normalizedValue, dayData.isPast);
+
+        return {
+            normalizedValue,
+            color,
+            waveHeight
+        };
+    }
+
+    getColorForValue(value, isPast) {
+        if (isPast) {
+            return '#AAAAAA';
+        }
+
+        if (value <= this.colorStops.high.threshold) {
+            return this.colorStops.high.color;
+        } else if (value <= this.colorStops.medium.threshold) {
+            return this.colorStops.medium.color;
+        } else if (value <= this.colorStops.low.threshold) {
+            return this.colorStops.low.color;
+        } else {
+            return this.colorStops.critical.color;
+        }
+    }
 
     createWavePath(baseHeight, amplitude, frequency, phase) {
-    const width = 200;
-    const points = [];
+        const width = 200;
+        const points = [];
 
-    for (let x = 0; x <= width; x += 1) {
-    const y = baseHeight - (amplitude * Math.sin((x * frequency) + phase));
-    points.push(`${x},${y}`);
-}
+        for (let x = 0; x <= width; x += 1) {
+            const y = baseHeight - (amplitude * Math.sin((x * frequency) + phase));
+            points.push(`${x},${y}`);
+        }
 
-    points.push(`${width},100 0,100`);
+        points.push(`${width},100 0,100`);
 
-    return `M0,${baseHeight} L${points.join(' L')} Z`;
-}
+        return `M0,${baseHeight} L${points.join(' L')} Z`;
+    }
 
     renderCalendar() {
-    const calendar = document.getElementById('calendar');
-    calendar.innerHTML = '<h2 class="month-header">Maio 2025</h2>';
+        const calendar = document.getElementById('calendar');
+        calendar.innerHTML = '';
 
-    
-    const weekdayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    for (let i = 0; i < 7; i++) {
-    const dayHeader = document.createElement('div');
-    dayHeader.className = 'weekday-header';
-    dayHeader.innerText = weekdayNames[i];
-    calendar.appendChild(dayHeader);
+        const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(
+            new Date(this.selectedYear, this.selectedMonth)
+        );
+
+        const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+        const monthHeader = document.createElement('h2');
+        monthHeader.className = 'month-header';
+        monthHeader.innerText = capitalizedMonth;
+        calendar.appendChild(monthHeader);
+
+        const weekdayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        for (let i = 0; i < 7; i++) {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'weekday-header';
+            dayHeader.innerText = weekdayNames[i];
+            calendar.appendChild(dayHeader);
+        }
+
+        const firstDay = new Date(this.selectedYear, this.selectedMonth, 1);
+        const firstDayIndex = firstDay.getDay();
+
+        for (let i = 0; i < firstDayIndex; i++) {
+            const placeholder = document.createElement('div');
+            placeholder.style.visibility = 'hidden';
+            calendar.appendChild(placeholder);
+        }
+
+        const daysInMonth = new Date(this.selectedYear, this.selectedMonth + 1, 0).getDate();
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayDate = new Date(this.selectedYear, this.selectedMonth, day);
+            const isToday = this.isCurrentDay(dayDate);
+            const isPastDay = this.isPastDay(dayDate);
+
+            const dayData = this.calculateDayData(day);
+            const dayExpenses = this.getDayExpenses(day);
+            const dayAdditions = this.getDayAdditions(day);
+
+            const card = this.createDayCard(day, dayData, isToday, isPastDay, dayExpenses, dayAdditions);
+            calendar.appendChild(card);
+        }
+    }
+
+    calculateDayData(day) {
+        let remainingBudget = this.dailyBudget;
+
+        const dayDate = new Date(this.selectedYear, this.selectedMonth, day);
+        const currentDate = new Date();
+
+        const dayDateStr = dayDate.toISOString().split('T')[0];
+        const currentDateStr = currentDate.toISOString().split('T')[0];
+
+        if (dayDateStr < currentDateStr) {
+            return {
+                day,
+                remainingBudget: this.dailyBudget,
+                isPast: true
+            };
+        }
+
+        const dayExpenses = this.getDayExpenses(day);
+        const totalExpenses = dayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+        const dayAdditions = this.getDayAdditions(day);
+        const totalAdditions = dayAdditions.reduce((sum, addition) => sum + addition.amount, 0);
+
+        remainingBudget = this.dailyBudget - totalExpenses + totalAdditions;
+
+        return {
+            day,
+            remainingBudget,
+            isPast: false
+        };
+    }
+
+    isCurrentDay(date) {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
+    }
+
+    isPastDay(date) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        date.setHours(0, 0, 0, 0);
+        return date < today;
+    }
+
+    getDayExpenses(day) {
+        if (!this.expenses) {
+            console.log("No expenses data available", this.expenses);
+            return [];
+        }
+
+        // Get current month name from the selected month
+        const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        const currentMonthName = monthNames[this.selectedMonth];
+
+        // Check if we have expenses for this month
+        if (this.expenses.monthlyExpenses && this.expenses.monthlyExpenses[currentMonthName]) {
+            const expensesForMonth = this.expenses.monthlyExpenses[currentMonthName];
+
+            // Filter expenses for the specific day
+            const matches = expensesForMonth.filter(expense => {
+                // Handle array format [year, month, day, hour, minute]
+                if (Array.isArray(expense.expenseDate)) {
+                    const expenseYear = expense.expenseDate[0];
+                    const expenseMonth = expense.expenseDate[1]; // 1-indexed
+                    const expenseDay = expense.expenseDate[2];
+
+                    return expenseDay === day &&
+                        expenseMonth === this.selectedMonth + 1 && // Convert 0-indexed to 1-indexed
+                        expenseYear === this.selectedYear;
+                }
+                return false;
+            });
+
+            console.log(`Found ${matches.length} expenses for day ${day} in ${currentMonthName}`, matches);
+            return matches;
+        }
+
+        return [];
+    }
+
+    async fetchYearlyAdditions(year) {
+        try {
+            const response = await fetch(`/api/additions/get/yearly?year=${year}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch yearly additions');
+            }
+            const data = await response.json();
+
+            // Store the fetched additions
+            this.yearlyAdditions = data;
+            console.log("Fetched yearly additions:", this.yearlyAdditions);
+        } catch (error) {
+            console.error('Error fetching yearly additions:', error);
+            this.yearlyAdditions = [];
+        }
+    }
+
+
+    getDayAdditions(day) {
+        if (!this.yearlyAdditions || !Array.isArray(this.yearlyAdditions)) {
+            console.log("No yearly additions data available", this.yearlyAdditions);
+            return [];
+        }
+
+        const matches = this.yearlyAdditions.filter(addition => {
+            // Handle array format [year, month, day, hour, minute, second, nano]
+            if (Array.isArray(addition.createdAt)) {
+                const additionYear = addition.createdAt[0];
+                const additionMonth = addition.createdAt[1]; // 1-indexed
+                const additionDay = addition.createdAt[2];
+
+                return additionDay === day &&
+                    additionMonth === this.selectedMonth + 1 && // Convert selected month (0-indexed) to 1-indexed
+                    additionYear === this.selectedYear;
+            }
+            return false;
+        });
+
+        console.log(`Found ${matches.length} additions for day ${day}`, matches);
+        return matches;
+    }
+
+
+    createDayCard(day, dayData, isToday, isPastDay, dayExpenses, dayAdditions) {
+        const card = document.createElement('article');
+        card.className = 'day-card';
+        card.dataset.day = day;
+
+        // Default styles
+        card.style.border = '1px solid transparent';
+
+        // Calculate dimensions and styles based on expenses and additions
+        const hasExpenses = dayExpenses && dayExpenses.length > 0;
+        const hasAdditions = dayAdditions && dayAdditions.length > 0;
+
+        // Add class for styling purposes
+        if (hasExpenses) {
+            card.classList.add('has-expense');
+            card.dataset.expenseCount = dayExpenses.length;
+
+            // Calculate total expense amount
+            const totalExpenseAmount = dayExpenses.reduce((sum, expense) => sum + expense.expenseAmount, 0);
+            card.dataset.expenseTotal = totalExpenseAmount.toFixed(2);
+
+            // Apply expense border styling - ensuring it takes precedence
+            card.style.border = `2px solid ${this.borderColors.expense}`;
+            card.style.borderWidth = '2px'; // Force border width
+
+            // Optional: Add extra styling for high expenses
+            if (totalExpenseAmount > this.dailyBudget * 2) {
+                card.classList.add('high-expense');
+            } else if (totalExpenseAmount > this.dailyBudget) {
+                card.classList.add('medium-expense');
+            }
+        }
+
+        if (hasAdditions) {
+            card.classList.add('has-addition');
+            card.dataset.additionCount = dayAdditions.length;
+
+            // Only apply addition border if no expenses (expenses take precedence)
+            if (!hasExpenses) {
+                card.style.border = `2px solid ${this.borderColors.addition}`;
+            }
+        }
+
+        // Current day styling (only if no expenses or additions)
+        if (isToday && !hasExpenses && !hasAdditions) {
+            card.classList.add('current-day');
+            card.style.border = `2px solid ${this.borderColors.current}`;
+        }
+
+        if (isPastDay) {
+            card.classList.add('past-day');
+        }
+
+        // Rest of the function remains the same
+        const normalizedData = this.normalizeBudgetData(dayData);
+        card.dataset.normalized = normalizedData.normalizedValue;
+        card.dataset.waveHeight = normalizedData.waveHeight;
+
+        const waveContainer = document.createElement('div');
+        waveContainer.className = 'wave-container';
+
+        const svgNS = "http://www.w3.org/2000/svg";
+        const waveSvg = document.createElementNS(svgNS, "svg");
+        waveSvg.setAttribute("class", "wave-svg");
+        waveSvg.setAttribute("viewBox", "0 0 200 100");
+        waveSvg.setAttribute("preserveAspectRatio", "none");
+
+        const wavePath = document.createElementNS(svgNS, "path");
+        wavePath.setAttribute("fill", normalizedData.color);
+        wavePath.dataset.baseHeight = normalizedData.waveHeight;
+
+        const baseHeight = normalizedData.waveHeight;
+        wavePath.setAttribute("d", this.createWavePath(baseHeight, 0, 0.02, 0));
+
+        waveSvg.appendChild(wavePath);
+        waveContainer.appendChild(waveSvg);
+
+        const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(
+            new Date(this.selectedYear, this.selectedMonth)
+        );
+        const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+        const monthEl = document.createElement('div');
+        monthEl.className = 'month';
+        monthEl.innerText = capitalizedMonth;
+        monthEl.style.color = normalizedData.color;
+
+        card.appendChild(monthEl);
+
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number contrasting-text';
+        dayNumber.innerText = day;
+
+        dayNumber.style.webkitTextStroke = `1px ${normalizedData.color}`;
+        dayNumber.style.textStroke = `1px ${normalizedData.color}`;
+
+        card.appendChild(dayNumber);
+
+        const remaining = document.createElement('div');
+        remaining.className = 'remaining contrasting-text';
+        remaining.innerText = `R$ ${dayData.remainingBudget.toFixed(2).replace('.', ',')}`;
+        card.appendChild(remaining);
+
+        card.appendChild(waveContainer);
+
+        if (hasExpenses) {
+            this.createExpenseHoverCard(card, dayExpenses);
+        }
+
+        if (hasAdditions) {
+            this.createAdditionHoverInfo(card, dayAdditions);
+        }
+
+        this.setupWaveAnimation(card, wavePath, baseHeight);
+
+        // Make the card look clickable if it has expenses or additions
+        if (hasExpenses || hasAdditions) {
+            card.style.cursor = 'pointer';
+        }
+
+        return card;
+    }
+
+    createExpenseHoverCard(card, expenses) {
+        const hoverCard = document.createElement('div');
+        hoverCard.className = 'expense-hover-card';
+
+        let hoverContent = '<h3>Despesas</h3>';
+
+        const sortedExpenses = [...expenses].sort((a, b) => b.expenseAmount - a.expenseAmount);
+
+        sortedExpenses.forEach(expense => {
+            const formattedAmount = expense.expenseAmount.toFixed(2).replace('.', ',');
+            const categoryLabel = this.getCategoryLabel(expense.expenseCategory);
+
+            hoverContent += `
+            <div class="expense-item">
+                <div class="expense-name">${expense.expenseName || 'Sem nome'}</div>
+                <div class="expense-amount">R$ ${formattedAmount}</div>
+                <div class="expense-category">${categoryLabel}</div>
+                ${expense.description ? `<div class="expense-description">${expense.description}</div>` : ''}
+                <div class="expense-recurrent">${expense.isRecurrent ? 'Recorrente' : 'Não recorrente'}</div>
+            </div>
+        `;
+        });
+
+        hoverCard.innerHTML = hoverContent;
+
+        hoverCard.style.position = 'absolute';
+        hoverCard.style.left = '100%';
+        hoverCard.style.top = '0';
+        hoverCard.style.zIndex = '100';
+        hoverCard.style.background = '#fff';
+        hoverCard.style.border = '1px solid #ddd';
+        hoverCard.style.borderRadius = '4px';
+        hoverCard.style.padding = '10px';
+        hoverCard.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        hoverCard.style.minWidth = '250px';
+
+        card.style.position = 'relative';
+        card.appendChild(hoverCard);
+
+        hoverCard.style.display = 'none';
+
+        // Add both hover and click event listeners
+        card.addEventListener('mouseenter', () => {
+            hoverCard.style.display = 'block';
+        });
+
+        card.addEventListener('mouseleave', () => {
+            hoverCard.style.display = 'none';
+        });
+
+        // Add click event to toggle display
+        card.addEventListener('click', (e) => {
+            // Toggle visibility on click
+            if (hoverCard.style.display === 'none') {
+                hoverCard.style.display = 'block';
+            } else {
+                hoverCard.style.display = 'none';
+            }
+            e.stopPropagation(); // Prevent bubbling
+        });
+
+        // Close hover card when clicking elsewhere on the page
+        document.addEventListener('click', (e) => {
+            if (!card.contains(e.target)) {
+                hoverCard.style.display = 'none';
+            }
+        });
+    }
+
+    createAdditionHoverInfo(card, additions) {
+        const hoverInfo = document.createElement('div');
+        hoverInfo.className = 'addition-hover-info';
+
+        let hoverContent = '<h3>Adições ao Saldo</h3>';
+
+        const sortedAdditions = [...additions].sort((a, b) => b.amount - a.amount);
+
+        sortedAdditions.forEach(addition => {
+            const formattedAmount = addition.amount.toFixed(2).replace('.', ',');
+
+            hoverContent += `
+            <div class="addition-item">
+                <div class="addition-amount">+ R$ ${formattedAmount}</div>
+                ${addition.description ? `<div class="addition-description">${addition.description}</div>` : ''}
+            </div>
+        `;
+        });
+
+        hoverInfo.innerHTML = hoverContent;
+
+        hoverInfo.style.position = 'absolute';
+        hoverInfo.style.left = '100%';
+        hoverInfo.style.top = '0';
+        hoverInfo.style.zIndex = '100';
+        hoverInfo.style.background = '#fff';
+        hoverInfo.style.border = '1px solid #ddd';
+        hoverInfo.style.borderRadius = '4px';
+        hoverInfo.style.padding = '10px';
+        hoverInfo.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        hoverInfo.style.minWidth = '250px';
+
+        card.style.position = 'relative';
+        card.appendChild(hoverInfo);
+
+        hoverInfo.style.display = 'none';
+
+        // Add both hover and click event listeners
+        card.addEventListener('mouseenter', () => {
+            hoverInfo.style.display = 'block';
+        });
+
+        card.addEventListener('mouseleave', () => {
+            hoverInfo.style.display = 'none';
+        });
+
+        // Add click event to toggle display
+        card.addEventListener('click', (e) => {
+            // Toggle visibility on click
+            if (hoverInfo.style.display === 'none') {
+                hoverInfo.style.display = 'block';
+            } else {
+                hoverInfo.style.display = 'none';
+            }
+            e.stopPropagation(); // Prevent bubbling
+        });
+    }
+
+    getCategoryLabel(categoryCode) {
+        const categories = {
+            'FOOD': 'Alimentação',
+            'TRANSPORT': 'Transporte',
+            'HEALTH': 'Saúde',
+            'EDUCATION': 'Educação',
+            'ENTERTAINMENT': 'Lazer',
+            'UTILITIES': 'Serviços Públicos',
+            'HOUSING': 'Moradia',
+            'PERSONAL_CARE': 'Cuidados Pessoais',
+            'INSURANCE': 'Seguro',
+            'SAVINGS': 'Poupança',
+            'OTHER': 'Outros'
+        };
+
+        return categories[categoryCode] || categoryCode;
+    }
+
+    setupWaveAnimation(card, wavePath, baseHeight) {
+        let animationId = null;
+        let phase = 0;
+        let amplitude = 3;
+        let frequency = 0.02;
+
+        const animateWave = () => {
+            phase += 0.1;
+            const path = this.createWavePath(baseHeight, amplitude, frequency, phase);
+            wavePath.setAttribute('d', path);
+            animationId = requestAnimationFrame(animateWave);
+        };
+
+        const handleMouseMove = (e) => {
+            const rect = card.getBoundingClientRect();
+            const relX = (e.clientX - rect.left) / rect.width;
+            const relY = (e.clientY - rect.top) / rect.height;
+
+            frequency = 0.01 + (relX * 0.05);
+            amplitude = 2 + ((1 - relY) * 10);
+
+            const currentHeight = parseFloat(wavePath.dataset.baseHeight);
+            const path = this.createWavePath(currentHeight, amplitude, frequency, phase);
+            wavePath.setAttribute('d', path);
+        };
+
+        card.addEventListener('mouseenter', () => {
+            const currentHeight = parseFloat(wavePath.dataset.baseHeight);
+            if (!animationId) {
+                animationId = requestAnimationFrame(animateWave);
+            }
+            card.addEventListener('mousemove', handleMouseMove);
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.removeEventListener('mousemove', handleMouseMove);
+
+            const currentHeight = parseFloat(wavePath.dataset.baseHeight);
+            const transitionToRest = () => {
+                amplitude *= 0.85;
+                const path = this.createWavePath(currentHeight, amplitude, frequency, phase);
+                wavePath.setAttribute('d', path);
+
+                if (amplitude > 0.1) {
+                    requestAnimationFrame(transitionToRest);
+                } else {
+                    const finalPath = this.createWavePath(currentHeight, 0, frequency, 0);
+                    wavePath.setAttribute('d', finalPath);
+
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                    phase = 0;
+                }
+            };
+
+            transitionToRest();
+        });
+    }
+
+    animateBudgetChange(cardElement, oldData, newData) {
+        const wavePath = cardElement.querySelector('.wave-svg path');
+        if (!wavePath) return;
+
+        const dayNumber = parseInt(cardElement.dataset.day, 10);
+        const dayData = this.calculateDayData(dayNumber);
+        const normalizedData = this.normalizeBudgetData(dayData);
+
+        const oldHeight = parseFloat(wavePath.dataset.baseHeight);
+        const newHeight = normalizedData.waveHeight;
+        const newColor = normalizedData.color;
+
+        wavePath.setAttribute('fill', newColor);
+
+        const monthEl = cardElement.querySelector('.month');
+        if (monthEl) {
+            monthEl.style.color = newColor;
+        }
+
+        const dayNumberEl = cardElement.querySelector('.day-number');
+        if (dayNumberEl) {
+            dayNumberEl.style.webkitTextStroke = `1px ${newColor}`;
+            dayNumberEl.style.textStroke = `1px ${newColor}`;
+        }
+
+        const remainingEl = cardElement.querySelector('.remaining');
+        if (remainingEl) {
+            remainingEl.innerText = `R$ ${dayData.remainingBudget.toFixed(2).replace('.', ',')}`;
+        }
+
+        wavePath.dataset.baseHeight = newHeight;
+        cardElement.dataset.waveHeight = newHeight;
+        cardElement.dataset.normalized = normalizedData.normalizedValue;
+
+        let startTime = null;
+        const animationDuration = 1000;
+
+        const animateHeight = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / animationDuration, 1);
+
+            const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            const currentHeight = oldHeight + (newHeight - oldHeight) * easeProgress;
+
+            const path = this.createWavePath(currentHeight, 0, 0.02, 0);
+            wavePath.setAttribute('d', path);
+
+            if (progress < 1) {
+                requestAnimationFrame(animateHeight);
+            }
+        };
+
+        requestAnimationFrame(animateHeight);
+    }
+
+    setupEventListeners() {
+        const currentDateTime = new Date().toISOString().slice(0, 16);
+        document.getElementById('expenseDate').value = currentDateTime;
+
+        document.getElementById('expense-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const expenseDate = document.getElementById('expenseDate').value;
+            const isRecurrent = document.getElementById('isRecurrent').checked;
+            const expenseAmount = parseFloat(document.getElementById('expenseAmount').value);
+            const expenseName = document.getElementById('expenseName').value;
+            const expenseCategory = document.getElementById('expenseCategory').value;
+            const description = document.getElementById('description').value;
+
+            const expenseDTO = {
+                expenseDate: expenseDate,
+                isRecurrent: isRecurrent,
+                expenseAmount: expenseAmount,
+                expenseName: expenseName,
+                expenseCategory: expenseCategory,
+                description: description
+            };
+
+            try {
+                const response = await fetch('/api/expense/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(expenseDTO)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to register expense');
+                }
+
+                const oldBalance = this.balance;
+                const oldDailyBudget = this.dailyBudget;
+
+                const newBalance = await response.json();
+                this.balance = newBalance;
+
+                this.calculateDailyBudget();
+                await this.fetchMonthData();
+
+                const expenseDateObj = new Date(expenseDate);
+                const expenseDay = expenseDateObj.getDate();
+
+                const affectedCard = document.querySelector(`.day-card[data-day="${expenseDay}"]`);
+                if (affectedCard) {
+                    const oldDayData = {
+                        day: expenseDay,
+                        remainingBudget: oldDailyBudget,
+                        isPast: false
+                    };
+
+                    const newDayData = this.calculateDayData(expenseDay);
+                    this.animateBudgetChange(affectedCard, oldDayData, newDayData);
+                }
+
+                const daysInMonth = new Date(this.selectedYear, this.selectedMonth + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    if (day !== expenseDay) {
+                        const dayCard = document.querySelector(`.day-card[data-day="${day}"]`);
+                        if (dayCard) {
+                            const oldDayData = {
+                                day: day,
+                                remainingBudget: oldDailyBudget,
+                                isPast: false
+                            };
+                            const newDayData = this.calculateDayData(day);
+                            this.animateBudgetChange(dayCard, oldDayData, newDayData);
+                        }
+                    }
+                }
+
+                e.target.reset();
+                document.getElementById('expenseDate').value = currentDateTime;
+
+                alert('Despesa registrada com sucesso!');
+            } catch (error) {
+                console.error('Error registering expense:', error);
+                alert('Erro ao registrar despesa. Por favor, tente novamente.');
+            }
+        });
+
+        const addBalanceBtn = document.querySelector('.add-balance .submit-btn');
+        addBalanceBtn.addEventListener('click', async () => {
+            const balanceAmount = parseFloat(document.getElementById('balance-amount').value);
+            const balanceDescription = document.getElementById('balance-description').value;
+
+            if (!balanceAmount || isNaN(balanceAmount)) {
+                alert('Por favor, insira um valor válido.');
+                return;
+            }
+
+            const additionDTO = {
+                amount: balanceAmount,
+                description: balanceDescription
+            };
+
+            try {
+                const response = await fetch('/api/additions/add/balance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(additionDTO)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add to balance');
+                }
+
+                const oldBalance = this.balance;
+                const oldDailyBudget = this.dailyBudget;
+
+                const newBalance = await response.json();
+                this.balance = newBalance;
+
+                this.calculateDailyBudget();
+                await this.fetchMonthData();
+
+                const daysInMonth = new Date(this.selectedYear, this.selectedMonth + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCard = document.querySelector(`.day-card[data-day="${day}"]`);
+                    if (dayCard) {
+                        const oldDayData = {
+                            day: day,
+                            remainingBudget: oldDailyBudget,
+                            isPast: false
+                        };
+                        const newDayData = this.calculateDayData(day);
+                        this.animateBudgetChange(dayCard, oldDayData, newDayData);
+                    }
+                }
+
+                document.getElementById('balance-amount').value = '';
+                document.getElementById('balance-description').value = '';
+
+                alert('Valor adicionado ao saldo com sucesso!');
+            } catch (error) {
+                console.error('Error adding to balance:', error);
+                alert('Erro ao adicionar ao saldo. Por favor, tente novamente.');
+            }
+        });
+    }
 }
 
-    
-    const firstDayIndex = 4;
-
-
-    for (let i = 0; i < firstDayIndex; i++) {
-    const placeholder = document.createElement('div');
-    placeholder.style.visibility = 'hidden';
-    calendar.appendChild(placeholder);
-}
-
-    budgetData.forEach(item => {
-    const card = document.createElement('article');
-    card.className = 'day-card';
-    card.dataset.day = item.day;
-    card.dataset.normalized = item.normalizedValue;
-
-    const waveContainer = document.createElement('div');
-    waveContainer.className = 'wave-container';
-
-    const svgNS = "http://www.w3.org/2000/svg";
-    const waveSvg = document.createElementNS(svgNS, "svg");
-    waveSvg.setAttribute("class", "wave-svg");
-    waveSvg.setAttribute("viewBox", "0 0 200 100");
-    waveSvg.setAttribute("preserveAspectRatio", "none");
-
-    const wavePath = document.createElementNS(svgNS, "path");
-    wavePath.setAttribute("fill", item.color);
-
-    const baseHeight = item.waveHeight;
-    wavePath.setAttribute("d", this.createWavePath(baseHeight, 0, 0.02, 0));
-
-    waveSvg.appendChild(wavePath);
-    waveContainer.appendChild(waveSvg);
-
-    const currentDate = new Date();
-    const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(currentDate);
-    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-    const monthEl = document.createElement('div');
-    monthEl.className = 'month';
-    monthEl.innerText = capitalizedMonth;
-    monthEl.style.color = item.color;
-
-    card.appendChild(monthEl);
-
-    const dayNumber = document.createElement('div');
-    dayNumber.className = 'day-number contrasting-text';
-    dayNumber.innerText = item.day;
-    card.appendChild(dayNumber);
-
-    const remaining = document.createElement('div');
-    remaining.className = 'remaining contrasting-text';
-    remaining.innerText = `R$ ${item.reais.toFixed(2).replace('.', ',')}`;
-    card.appendChild(remaining);
-
-    card.appendChild(waveContainer);
-    calendar.appendChild(card);
-
-    const waveData = {
-    card,
-    waveSvg,
-    wavePath,
-    baseHeight,
-    dayNumber,
-    remaining,
-    color: item.color,
-    animation: null,
-    phase: 0,
-    amplitude: 3,
-    frequency: 0.02
-};
-
-    this.setupHoverEffects(waveData);
+document.addEventListener('DOMContentLoaded', () => {
+    new FinancialCalendar();
 });
-}
-
-    setupHoverEffects(waveData) {
-    const { card, wavePath, waveSvg } = waveData;
-    let animationId = null;
-
-    const animateWave = () => {
-    waveData.phase += 0.1;
-
-    const path = this.createWavePath(
-    waveData.baseHeight,
-    waveData.amplitude,
-    waveData.frequency,
-    waveData.phase
-    );
-
-    wavePath.setAttribute('d', path);
-    animationId = requestAnimationFrame(animateWave);
-};
-
-    const handleMouseMove = (e) => {
-    const rect = card.getBoundingClientRect();
-    const relX = (e.clientX - rect.left) / rect.width;
-    const relY = (e.clientY - rect.top) / rect.height;
-
-    waveData.frequency = 0.01 + (relX * 0.05);
-    waveData.amplitude = 2 + ((1 - relY) * 10);
-};
-
-    card.addEventListener('mouseenter', () => {
-    if (!animationId) {
-    animationId = requestAnimationFrame(animateWave);
-}
-    card.addEventListener('mousemove', handleMouseMove);
-});
-
-    card.addEventListener('mouseleave', () => {
-    card.removeEventListener('mousemove', handleMouseMove);
-
-    const transitionToRest = () => {
-    waveData.amplitude *= 0.85;
-
-    const path = this.createWavePath(
-    waveData.baseHeight,
-    waveData.amplitude,
-    waveData.frequency,
-    waveData.phase
-    );
-
-    wavePath.setAttribute('d', path);
-
-    if (waveData.amplitude > 0.1) {
-    requestAnimationFrame(transitionToRest);
-} else {
-    const finalPath = this.createWavePath(waveData.baseHeight, 0, waveData.frequency, 0);
-    wavePath.setAttribute('d', finalPath);
-
-    if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-}
-
-    waveData.phase = 0;
-}
-};
-
-    transitionToRest();
-});
-}
-}
-
-    document.addEventListener('DOMContentLoaded', () => {
-    new WaveAnimation();
-
-    document.getElementById('expense-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const formData = {
-    expenseDate: document.getElementById('expenseDate').value,
-    isRecurrent: document.getElementById('isRecurrent').checked,
-    expenseAmount: document.getElementById('expenseAmount').value,
-    expenseName: document.getElementById('expenseName').value,
-    expenseCategory: document.getElementById('expenseCategory').value,
-    description: document.getElementById('description').value
-};
-
-    console.log('Expense submitted:', formData);
-
-    this.reset();
-    alert('Despesa registrada com sucesso!');
-});
-
-    const currentDateTime = new Date().toISOString().slice(0, 16);
-    document.getElementById('expenseDate').value = currentDateTime;
-});
-

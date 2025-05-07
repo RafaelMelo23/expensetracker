@@ -1,5 +1,22 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+    --color-high: #2ecc71;
+    --color-medium: #f1c40f;
+    --color-low: #e67e22;
+    --color-critical: #e74c3c;
+    --wave-color: var(--color-high);
+
+    --border-current: #1F618D;
+    --border-expense: #8E44AD;
+    --border-add: #1ABC9C;
+
+    --primary-color: #1864ab;
+    --primary-hover: #930808;
+    --add-btn-color: #179818;
+    --add-btn-hover: #0f6310;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background: #f5f5f5;
@@ -56,7 +73,6 @@ body {
 .form-group input, .form-group select, .form-group textarea {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #ddd;
     border-radius: 5px;
     font-family: 'Inter', sans-serif;
     background-color: #f5f5f5;
@@ -80,7 +96,7 @@ body {
 .submit-btn {
     width: 100%;
     padding: 0.7rem;
-    background: #1864ab;
+    background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 5px;
@@ -90,7 +106,7 @@ body {
 }
 
 .submit-btn:hover {
-    background: #930808;
+    background: var(--primary-hover);
 }
 
 section.calendar {
@@ -125,7 +141,6 @@ section.calendar {
 }
 
 .day-card {
-    border: 1px solid rgba(0,0,0,0.2);
     border-radius: 10px;
     position: relative;
     overflow: hidden;
@@ -209,17 +224,21 @@ section.calendar {
     transition: transform 0.5s ease-out;
 }
 
-:root {
-    --color-high: #2ecc71;
-    --color-medium: #f1c40f;
-    --color-low: #e67e22;
-    --color-critical: #e74c3c;
-    --wave-color: var(--color-high);
+/* Custom border styles */
+.current-day {
+    border: 2px solid var(--border-current);
+}
 
-        --border-current: #1F618D;
-        --border-expense: #8E44AD;
-        --border-add:     #1ABC9C; 
+.has-expense {
+    border: 2px solid var(--border-expense);
+}
 
+.has-addition {
+    border: 2px solid var(--border-add);
+}
+
+.past-day {
+    opacity: 0.7;
 }
 
 .add-balance {
@@ -261,10 +280,111 @@ section.calendar {
 }
 
 .add-balance .submit-btn {
-    background: #179818;;
+    background: var(--add-btn-color);
     margin-top: 0.5rem;
 }
 
 .add-balance .submit-btn:hover {
-    background: #0f6310;;
+    background: var(--add-btn-hover);
+}
+
+/* Hover Cards for Expenses and Additions */
+.expense-hover-card, .addition-hover-info {
+    position: absolute;
+    top: -5px;
+    left: 105%;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    padding: 12px;
+    min-width: 220px;
+    z-index: 10;
+    display: none;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.expense-hover-card h3, .addition-hover-info h3 {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.expense-item, .addition-item {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.expense-item:last-child, .addition-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.expense-name {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.expense-amount, .addition-amount {
+    font-weight: bold;
+    color: var(--color-critical);
+    font-size: 13px;
+}
+
+.addition-amount {
+    color: var(--color-high);
+}
+
+.expense-category, .expense-description, .expense-recurrent, .addition-description {
+    font-size: 12px;
+    color: #666;
+    margin-top: 3px;
+}
+
+.expense-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #ff3b30;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.day-card.high-expense {
+    border-width: 3px;
+    box-shadow: 0 0 12px rgba(255, 59, 48, 0.7);
+}
+
+.day-card.medium-expense {
+    border-width: 2px;
+    box-shadow: 0 0 8px rgba(255, 145, 48, 0.5);
+}
+
+.day-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.day-card.has-expense:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }

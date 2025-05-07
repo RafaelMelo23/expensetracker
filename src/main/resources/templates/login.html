@@ -154,7 +154,7 @@
 
     <div class="form-group">
       <label for="password">Senha:</label>
-      <input type="password" id="password" name="password" required minlength="12" maxlength="72">
+      <input type="password" id="password" name="password" required minlength="8" maxlength="72">
       <div class="error" id="passwordError"></div>
     </div>
 
@@ -191,7 +191,7 @@
       document.getElementById('emailError').textContent = 'Invalid email address.';
       isValid = false;
     }
-    if (!data.password || data.password.length < 12 || data.password.length > 72) {
+    if (!data.password || data.password.length < 7 || data.password.length > 72) {
       document.getElementById('passwordError').textContent = 'Password must be between 12 and 72 characters.';
       isValid = false;
     }

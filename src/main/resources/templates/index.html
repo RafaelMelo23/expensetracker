@@ -5,13 +5,14 @@
   <title>Calendário Financeiro</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <link href="/css/style.css" type="text/css" rel="stylesheet">
+  <link href="/css/first-registry.css" type="text/css" rel="stylesheet">
 </head>
 <body>
 
 <div class="main-container">
   <div class="calendar-container">
     <section class="calendar" id="calendar">
-      <h2 class="month-header">Maio 2025</h2>
+      <h2 class="month-header"></h2>
 
     </section>
   </div>
@@ -59,7 +60,7 @@
       </div>
 
       <div class="form-group checkbox-group">
-        <input type="checkbox" id="isRecurrent" required>
+        <input type="checkbox" id="isRecurrent">
         <label for="isRecurrent">Despesa Recorrente <span style="color: red">*</span></label>
       </div>
 
@@ -78,6 +79,102 @@
       </div>
   </div>
 </div>
+
+<div class="popup-overlay" th:if="${isFirstLogin}"> <!-- First Registry Section -->
+    <div class="popup-container">
+        <h1 class="popup-title">Bem-vindo ao Expense Tracker!</h1>
+        <p class="popup-subtitle">Para começarmos, precisamos de algumas informações iniciais sobre a sua situação financeira</p>
+
+        <div class="info-text">
+            <strong>Importante:</strong> As despesas cadastradas nesta etapa inicial serão consideradas como recorrentes mensais. Você poderá adicionar outras despesas não recorrentes posteriormente.
+        </div>
+
+        <form id="firstRegistryForm">
+            <div class="form-section">
+                <h2 class="form-section-title">Informações Financeiras</h2>
+
+                <div class="form-group">
+                    <label for="currentBalance">Saldo Atual <span class="required-field">*</span></label>
+                    <input type="number" id="currentBalance" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthlySalary">Salário Mensal <span class="required-field">*</span></label>
+                    <input type="number" id="monthlySalary" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="salaryDate">Dia do Recebimento do Salário <span class="required-field">*</span></label>
+                    <input type="number" id="salaryDate" min="1" max="31" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="form-section-title">Despesas Recorrentes</h2>
+                <div id="expensesContainer">
+                    <div class="expense-container">
+                        <div class="expense-header">
+                            <div class="expense-title">Despesa Recorrente #1</div>
+                            <div class="expense-actions">
+                                <button type="button" class="btn-remove-expense" style="display: none;">✕</button>
+                            </div>
+                        </div>
+                        <div class="expense-form">
+                            <div class="form-group">
+                                <label for="expenseName0">Nome da Despesa <span class="required-field">*</span></label>
+                                <input type="text" id="expenseName0" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="expenseAmount0">Valor <span class="required-field">*</span></label>
+                                <input type="number" id="expenseAmount0" min="0" step="0.01" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="expenseDate0">Data da Despesa<span class="required-field">*</span></label>
+                                <input type="date" id="expenseDate0" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="expenseCategory0">Categoria</label>
+                                <select id="expenseCategory0">
+                                    <option value="HOUSING">Casa</option>
+                                    <option value="FOOD">Alimentação</option>
+                                    <option value="TRANSPORT">Transporte</option>
+                                    <option value="HEALTH">Saúde</option>
+                                    <option value="ENTERTAINMENT">Lazer</option>
+                                    <option value="EDUCATION">Educação</option>
+                                    <option value="UTILITIES">Serviços</option>
+                                    <option value="PERSONAL_CARE">Cuidados pessoais</option>
+                                    <option value="INSURANCE">Seguro</option>
+                                    <option value="SAVINGS">Poupança</option>
+                                    <option value="OTHER">Outros</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group expense-form-full">
+                                <label for="expenseDescription0">Descrição</label>
+                                <input type="text" id="expenseDescription0">
+                            </div>
+
+                            <div class="form-group expense-form-full checkbox-group">
+                                <input type="checkbox" id="isRecurrent0" checked disabled>
+                                <label for="isRecurrent0">Despesa Recorrente</label>
+                            </div>
+                            <p class="recurrent-note expense-form-full">Esta despesa será automaticamente registrada todo mês no dia especificado.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-add-expense" id="addExpenseBtn">+ Adicionar Outra Despesa Recorrente</button>
+            </div>
+
+            <button type="submit" class="submit-btn">Confirmar e Iniciar</button>
+        </form>
+    </div>
+    <script src="/js/first-registry.js"></script>
+</div>
+
 <script src="/js/main.js"></script>
 </body>
 </html>
