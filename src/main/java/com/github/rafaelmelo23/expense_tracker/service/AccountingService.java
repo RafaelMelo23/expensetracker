@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,6 +60,25 @@ public class AccountingService {
     public BigDecimal getBalance() {
         return userAccountingDAO.findCurrentBalanceByUser_Id(userService.getAuthenticatedUser().getId());
     }
+
+    public BigDecimal getSalary() {
+        return userAccountingDAO.findSalaryByUser_Id(userService.getAuthenticatedUser().getId());
+    }
+
+    public BigDecimal getMonthlySpentPercent() {
+        LocalUser user = userService.getAuthenticatedUser();
+        BigDecimal salary          = userAccountingDAO.findSalaryByUser_Id(user.getId());
+        BigDecimal currentBalance  = userAccountingDAO.findCurrentBalanceByUser_Id(user.getId());
+        BigDecimal spentSoFar      = salary.subtract(currentBalance);
+
+        if (salary.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
+        BigDecimal percentage = spentSoFar
+                .divide(salary,  2, RoundingMode.HALF_UP)
+                .min(BigDecimal.ONE)
+                .max(BigDecimal.ZERO);
+        return percentage;
+    }
+
 
     public void updateSalaryAmount(BigDecimal salaryAmount) {
         LocalUser user = userService.getAuthenticatedUser();

@@ -54,8 +54,20 @@ public class UserServiceController {
     }
 
     @GetMapping("/get/balance")
-    public ResponseEntity<BigDecimal> getBalanceAdditions() {
+    public ResponseEntity<BigDecimal> getBalance() {
 
         return ResponseEntity.ok().body(accountingService.getBalance());
+    }
+
+    @GetMapping("/get/salary")
+    public ResponseEntity<BigDecimal> getSalary() {
+
+        return ResponseEntity.ok().body(accountingService.getSalary());
+    }
+
+    @GetMapping("/get/salary/spent")
+    public ResponseEntity<BigDecimal> getSalarySpentPercentage() {
+
+        return ResponseEntity.ok().body(accountingService.getMonthlySpentPercent());
     }
 }

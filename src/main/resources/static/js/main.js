@@ -100,11 +100,17 @@ class FinancialCalendar {
             waveHeight = 100;
         }
         else {
+            // Calculate percentage of budget remaining (0-100%)
             const percentageRemaining = Math.min(100, (dayData.remainingBudget / this.dailyBudget) * 100);
+
+            // Convert to a value between 0-1 (0 = full budget, 1 = no budget)
             normalizedValue = 1 - (percentageRemaining / 100);
-            waveHeight = 85 - ((percentageRemaining / 100) * 65);
+
+            // Calculate wave height: 20% at full budget, 100% at empty budget
+            waveHeight = 80 - ((percentageRemaining / 100) * 60);
         }
 
+        // Ensure values are within bounds
         normalizedValue = Math.max(0, Math.min(1, normalizedValue));
         waveHeight = Math.max(20, Math.min(100, waveHeight));
 
@@ -196,34 +202,10 @@ class FinancialCalendar {
     }
 
     calculateDayData(day) {
-        let remainingBudget = this.dailyBudget;
-
-        const dayDate = new Date(this.selectedYear, this.selectedMonth, day);
-        const currentDate = new Date();
-
-        const dayDateStr = dayDate.toISOString().split('T')[0];
-        const currentDateStr = currentDate.toISOString().split('T')[0];
-
-        if (dayDateStr < currentDateStr) {
-            return {
-                day,
-                remainingBudget: this.dailyBudget,
-                isPast: true
-            };
-        }
-
-        const dayExpenses = this.getDayExpenses(day);
-        const totalExpenses = dayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-
-        const dayAdditions = this.getDayAdditions(day);
-        const totalAdditions = dayAdditions.reduce((sum, addition) => sum + addition.amount, 0);
-
-        remainingBudget = this.dailyBudget - totalExpenses + totalAdditions;
-
         return {
             day,
-            remainingBudget,
-            isPast: false
+            remainingBudget: this.dailyBudget,
+            isPast: this.isPastDay(new Date(this.selectedYear, this.selectedMonth, day))
         };
     }
 
@@ -336,21 +318,7 @@ class FinancialCalendar {
         if (hasExpenses) {
             card.classList.add('has-expense');
             card.dataset.expenseCount = dayExpenses.length;
-
-            // Calculate total expense amount
-            const totalExpenseAmount = dayExpenses.reduce((sum, expense) => sum + expense.expenseAmount, 0);
-            card.dataset.expenseTotal = totalExpenseAmount.toFixed(2);
-
-            // Apply expense border styling - ensuring it takes precedence
             card.style.border = `2px solid ${this.borderColors.expense}`;
-            card.style.borderWidth = '2px'; // Force border width
-
-            // Optional: Add extra styling for high expenses
-            if (totalExpenseAmount > this.dailyBudget * 2) {
-                card.classList.add('high-expense');
-            } else if (totalExpenseAmount > this.dailyBudget) {
-                card.classList.add('medium-expense');
-            }
         }
 
         if (hasAdditions) {
@@ -373,10 +341,8 @@ class FinancialCalendar {
             card.classList.add('past-day');
         }
 
-        // Rest of the function remains the same
-        const normalizedData = this.normalizeBudgetData(dayData);
-        card.dataset.normalized = normalizedData.normalizedValue;
-        card.dataset.waveHeight = normalizedData.waveHeight;
+        // Get normalized budget data for visualization
+        const budgetData = this.normalizeBudgetData(dayData);
 
         const waveContainer = document.createElement('div');
         waveContainer.className = 'wave-container';
@@ -388,11 +354,10 @@ class FinancialCalendar {
         waveSvg.setAttribute("preserveAspectRatio", "none");
 
         const wavePath = document.createElementNS(svgNS, "path");
-        wavePath.setAttribute("fill", normalizedData.color);
-        wavePath.dataset.baseHeight = normalizedData.waveHeight;
+        wavePath.setAttribute("fill", budgetData.color);
+        wavePath.dataset.baseHeight = budgetData.waveHeight;
 
-        const baseHeight = normalizedData.waveHeight;
-        wavePath.setAttribute("d", this.createWavePath(baseHeight, 0, 0.02, 0));
+        wavePath.setAttribute("d", this.createWavePath(budgetData.waveHeight, 0, 0.02, 0));
 
         waveSvg.appendChild(wavePath);
         waveContainer.appendChild(waveSvg);
@@ -405,7 +370,7 @@ class FinancialCalendar {
         const monthEl = document.createElement('div');
         monthEl.className = 'month';
         monthEl.innerText = capitalizedMonth;
-        monthEl.style.color = normalizedData.color;
+        monthEl.style.color = budgetData.color;
 
         card.appendChild(monthEl);
 
@@ -413,8 +378,8 @@ class FinancialCalendar {
         dayNumber.className = 'day-number contrasting-text';
         dayNumber.innerText = day;
 
-        dayNumber.style.webkitTextStroke = `1px ${normalizedData.color}`;
-        dayNumber.style.textStroke = `1px ${normalizedData.color}`;
+        dayNumber.style.webkitTextStroke = `1px ${budgetData.color}`;
+        dayNumber.style.textStroke = `1px ${budgetData.color}`;
 
         card.appendChild(dayNumber);
 
@@ -433,7 +398,7 @@ class FinancialCalendar {
             this.createAdditionHoverInfo(card, dayAdditions);
         }
 
-        this.setupWaveAnimation(card, wavePath, baseHeight);
+        this.setupWaveAnimation(card, wavePath, budgetData.waveHeight);
 
         // Make the card look clickable if it has expenses or additions
         if (hasExpenses || hasAdditions) {
@@ -649,60 +614,36 @@ class FinancialCalendar {
         });
     }
 
-    animateBudgetChange(cardElement, oldData, newData) {
+    animateBudgetChange(cardElement) {
         const wavePath = cardElement.querySelector('.wave-svg path');
         if (!wavePath) return;
 
         const dayNumber = parseInt(cardElement.dataset.day, 10);
-        const dayData = this.calculateDayData(dayNumber);
-        const normalizedData = this.normalizeBudgetData(dayData);
+        const isPast = this.isPastDay(new Date(this.selectedYear, this.selectedMonth, dayNumber));
+        const waveColor = isPast ? '#AAAAAA' : '#45c849';
+        const baseHeight = 50;
 
-        const oldHeight = parseFloat(wavePath.dataset.baseHeight);
-        const newHeight = normalizedData.waveHeight;
-        const newColor = normalizedData.color;
-
-        wavePath.setAttribute('fill', newColor);
+        wavePath.setAttribute('fill', waveColor);
+        wavePath.dataset.baseHeight = baseHeight;
 
         const monthEl = cardElement.querySelector('.month');
         if (monthEl) {
-            monthEl.style.color = newColor;
+            monthEl.style.color = waveColor;
         }
 
         const dayNumberEl = cardElement.querySelector('.day-number');
         if (dayNumberEl) {
-            dayNumberEl.style.webkitTextStroke = `1px ${newColor}`;
-            dayNumberEl.style.textStroke = `1px ${newColor}`;
+            dayNumberEl.style.webkitTextStroke = `1px ${waveColor}`;
+            dayNumberEl.style.textStroke = `1px ${waveColor}`;
         }
 
         const remainingEl = cardElement.querySelector('.remaining');
         if (remainingEl) {
-            remainingEl.innerText = `R$ ${dayData.remainingBudget.toFixed(2).replace('.', ',')}`;
+            remainingEl.innerText = `R$ ${this.dailyBudget.toFixed(2).replace('.', ',')}`;
         }
 
-        wavePath.dataset.baseHeight = newHeight;
-        cardElement.dataset.waveHeight = newHeight;
-        cardElement.dataset.normalized = normalizedData.normalizedValue;
-
-        let startTime = null;
-        const animationDuration = 1000;
-
-        const animateHeight = (timestamp) => {
-            if (!startTime) startTime = timestamp;
-            const elapsed = timestamp - startTime;
-            const progress = Math.min(elapsed / animationDuration, 1);
-
-            const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-            const currentHeight = oldHeight + (newHeight - oldHeight) * easeProgress;
-
-            const path = this.createWavePath(currentHeight, 0, 0.02, 0);
-            wavePath.setAttribute('d', path);
-
-            if (progress < 1) {
-                requestAnimationFrame(animateHeight);
-            }
-        };
-
-        requestAnimationFrame(animateHeight);
+        const path = this.createWavePath(baseHeight, 0, 0.02, 0);
+        wavePath.setAttribute('d', path);
     }
 
     setupEventListeners() {
