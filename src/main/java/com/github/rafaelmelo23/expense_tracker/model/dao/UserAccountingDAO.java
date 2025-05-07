@@ -39,6 +39,7 @@ public interface UserAccountingDAO extends ListCrudRepository<UserAccounting, Lo
     @Query("SELECT ua.currentBalance FROM UserAccounting ua WHERE ua.user.id = :userId")
     BigDecimal findCurrentBalanceByUser_Id(@Param("userId") Long userId);
 
+    @Query("SELECT ua.monthlySalary FROM UserAccounting ua WHERE ua.user.id = :userId")
     BigDecimal findSalaryByUser_Id(Long userId);
 
 

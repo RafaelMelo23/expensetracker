@@ -26,6 +26,7 @@ class FinancialCalendar {
     async init() {
         try {
             await this.fetchBalance();
+            await this.fetchSalarySpentPercentage();
             await this.fetchYearlyAdditions(this.selectedYear);
             await this.fetchMonthData();
             this.renderCalendar();
@@ -57,12 +58,12 @@ class FinancialCalendar {
             }
 
             const data = await response.json();
-            this.expenses = data; // Store the full structure
+            this.expenses = data;
 
-            // Log the loaded data
+
             console.log('Loaded expense data:', this.expenses);
 
-            // Get current month name for debugging
+
             const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
             const currentMonthName = monthNames[this.selectedMonth];
 
@@ -91,26 +92,20 @@ class FinancialCalendar {
         let normalizedValue = 0;
         let waveHeight = 0;
 
-        if (this.dailyBudget <= 0) {
-            normalizedValue = 1;
-            waveHeight = 100;
-        }
-        else if (dayData.remainingBudget <= 0) {
-            normalizedValue = 1;
-            waveHeight = 100;
-        }
-        else {
-            // Calculate percentage of budget remaining (0-100%)
-            const percentageRemaining = Math.min(100, (dayData.remainingBudget / this.dailyBudget) * 100);
 
-            // Convert to a value between 0-1 (0 = full budget, 1 = no budget)
-            normalizedValue = 1 - (percentageRemaining / 100);
+        if (this.salarySpentPercentage !== undefined) {
 
-            // Calculate wave height: 20% at full budget, 100% at empty budget
-            waveHeight = 80 - ((percentageRemaining / 100) * 60);
+            normalizedValue = Math.min(1, this.salarySpentPercentage);
+
+
+            waveHeight = 20 + (normalizedValue * 80);
+        } else {
+
+            normalizedValue = 0.5;
+            waveHeight = 60;
         }
 
-        // Ensure values are within bounds
+
         normalizedValue = Math.max(0, Math.min(1, normalizedValue));
         waveHeight = Math.max(20, Math.min(100, waveHeight));
 
@@ -127,6 +122,7 @@ class FinancialCalendar {
         if (isPast) {
             return '#AAAAAA';
         }
+
 
         if (value <= this.colorStops.high.threshold) {
             return this.colorStops.high.color;
@@ -229,24 +225,24 @@ class FinancialCalendar {
             return [];
         }
 
-        // Get current month name from the selected month
+
         const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
         const currentMonthName = monthNames[this.selectedMonth];
 
-        // Check if we have expenses for this month
+
         if (this.expenses.monthlyExpenses && this.expenses.monthlyExpenses[currentMonthName]) {
             const expensesForMonth = this.expenses.monthlyExpenses[currentMonthName];
 
-            // Filter expenses for the specific day
+
             const matches = expensesForMonth.filter(expense => {
-                // Handle array format [year, month, day, hour, minute]
+
                 if (Array.isArray(expense.expenseDate)) {
                     const expenseYear = expense.expenseDate[0];
-                    const expenseMonth = expense.expenseDate[1]; // 1-indexed
+                    const expenseMonth = expense.expenseDate[1];
                     const expenseDay = expense.expenseDate[2];
 
                     return expenseDay === day &&
-                        expenseMonth === this.selectedMonth + 1 && // Convert 0-indexed to 1-indexed
+                        expenseMonth === this.selectedMonth + 1 &&
                         expenseYear === this.selectedYear;
                 }
                 return false;
@@ -267,7 +263,7 @@ class FinancialCalendar {
             }
             const data = await response.json();
 
-            // Store the fetched additions
+
             this.yearlyAdditions = data;
             console.log("Fetched yearly additions:", this.yearlyAdditions);
         } catch (error) {
@@ -284,14 +280,14 @@ class FinancialCalendar {
         }
 
         const matches = this.yearlyAdditions.filter(addition => {
-            // Handle array format [year, month, day, hour, minute, second, nano]
+
             if (Array.isArray(addition.createdAt)) {
                 const additionYear = addition.createdAt[0];
-                const additionMonth = addition.createdAt[1]; // 1-indexed
+                const additionMonth = addition.createdAt[1];
                 const additionDay = addition.createdAt[2];
 
                 return additionDay === day &&
-                    additionMonth === this.selectedMonth + 1 && // Convert selected month (0-indexed) to 1-indexed
+                    additionMonth === this.selectedMonth + 1 &&
                     additionYear === this.selectedYear;
             }
             return false;
@@ -307,14 +303,14 @@ class FinancialCalendar {
         card.className = 'day-card';
         card.dataset.day = day;
 
-        // Default styles
+
         card.style.border = '1px solid transparent';
 
-        // Calculate dimensions and styles based on expenses and additions
+
         const hasExpenses = dayExpenses && dayExpenses.length > 0;
         const hasAdditions = dayAdditions && dayAdditions.length > 0;
 
-        // Add class for styling purposes
+
         if (hasExpenses) {
             card.classList.add('has-expense');
             card.dataset.expenseCount = dayExpenses.length;
@@ -325,13 +321,13 @@ class FinancialCalendar {
             card.classList.add('has-addition');
             card.dataset.additionCount = dayAdditions.length;
 
-            // Only apply addition border if no expenses (expenses take precedence)
+
             if (!hasExpenses) {
                 card.style.border = `2px solid ${this.borderColors.addition}`;
             }
         }
 
-        // Current day styling (only if no expenses or additions)
+
         if (isToday && !hasExpenses && !hasAdditions) {
             card.classList.add('current-day');
             card.style.border = `2px solid ${this.borderColors.current}`;
@@ -341,7 +337,7 @@ class FinancialCalendar {
             card.classList.add('past-day');
         }
 
-        // Get normalized budget data for visualization
+
         const budgetData = this.normalizeBudgetData(dayData);
 
         const waveContainer = document.createElement('div');
@@ -400,7 +396,7 @@ class FinancialCalendar {
 
         this.setupWaveAnimation(card, wavePath, budgetData.waveHeight);
 
-        // Make the card look clickable if it has expenses or additions
+
         if (hasExpenses || hasAdditions) {
             card.style.cursor = 'pointer';
         }
@@ -449,7 +445,7 @@ class FinancialCalendar {
 
         hoverCard.style.display = 'none';
 
-        // Add both hover and click event listeners
+
         card.addEventListener('mouseenter', () => {
             hoverCard.style.display = 'block';
         });
@@ -458,18 +454,18 @@ class FinancialCalendar {
             hoverCard.style.display = 'none';
         });
 
-        // Add click event to toggle display
+
         card.addEventListener('click', (e) => {
-            // Toggle visibility on click
+
             if (hoverCard.style.display === 'none') {
                 hoverCard.style.display = 'block';
             } else {
                 hoverCard.style.display = 'none';
             }
-            e.stopPropagation(); // Prevent bubbling
+            e.stopPropagation();
         });
 
-        // Close hover card when clicking elsewhere on the page
+
         document.addEventListener('click', (e) => {
             if (!card.contains(e.target)) {
                 hoverCard.style.display = 'none';
@@ -514,7 +510,7 @@ class FinancialCalendar {
 
         hoverInfo.style.display = 'none';
 
-        // Add both hover and click event listeners
+
         card.addEventListener('mouseenter', () => {
             hoverInfo.style.display = 'block';
         });
@@ -523,15 +519,15 @@ class FinancialCalendar {
             hoverInfo.style.display = 'none';
         });
 
-        // Add click event to toggle display
+
         card.addEventListener('click', (e) => {
-            // Toggle visibility on click
+
             if (hoverInfo.style.display === 'none') {
                 hoverInfo.style.display = 'block';
             } else {
                 hoverInfo.style.display = 'none';
             }
-            e.stopPropagation(); // Prevent bubbling
+            e.stopPropagation();
         });
     }
 
@@ -551,6 +547,24 @@ class FinancialCalendar {
         };
 
         return categories[categoryCode] || categoryCode;
+    }
+
+    async fetchSalarySpentPercentage() {
+        try {
+            const response = await fetch('/api/user/get/salary/spent');
+            if (!response.ok) {
+                throw new Error('Failed to fetch salary spent percentage');
+            }
+
+            const percentage = await response.json();
+            this.salarySpentPercentage = percentage;
+            console.log('Salary spent percentage:', this.salarySpentPercentage);
+            return percentage;
+        } catch (error) {
+            console.error('Error fetching salary spent percentage:', error);
+            this.salarySpentPercentage = 0;
+            return 0;
+        }
     }
 
     setupWaveAnimation(card, wavePath, baseHeight) {
@@ -688,6 +702,9 @@ class FinancialCalendar {
                 const newBalance = await response.json();
                 this.balance = newBalance;
 
+
+                await this.fetchSalarySpentPercentage();
+
                 this.calculateDailyBudget();
                 await this.fetchMonthData();
 
@@ -765,6 +782,9 @@ class FinancialCalendar {
 
                 const newBalance = await response.json();
                 this.balance = newBalance;
+
+
+                await this.fetchSalarySpentPercentage();
 
                 this.calculateDailyBudget();
                 await this.fetchMonthData();
