@@ -3,10 +3,6 @@ package com.github.rafaelmelo23.expense_tracker.api.security;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.service.UserService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,13 +33,18 @@ public class HtmlPagesMapping {
     }
 
     @GetMapping("/login")
-    public String teste() {
+    public String login() {
         return "login";
     }
 
     @GetMapping("/first/registry")
     public String firstRegistry() {
         return "first-registry";
+    }
+
+    @GetMapping("/calendar")
+    public String calendario() {
+        return "calendar";
     }
 
 }

@@ -28,6 +28,23 @@ body {
     flex-direction: column;
 }
 
+.anual-registry {
+    display: inline-block;
+    padding: 10px 20px;
+    max-width: fit-content;
+    color: #000000;
+    text-decoration: none;
+    border: black 0.1rem solid;
+    border-radius: 0.3rem;
+    font-weight: bold;
+    transition: 0.3s ease, transform 0.2s ease;
+}
+
+.anual-registry:hover {
+    transform: translateY(-1px);
+}
+
+
 .main-container {
     display: flex;
     height: calc(100vh - 1rem);

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendário Financeiro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="/css/calendar.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <a class="home-button" href="/">Home</a>
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <div class="year-selector">
+                <button id="prev-year">←</button>
+                <span id="current-year" style="visibility: hidden"></span>
+                <button id="next-year">→</button>
+            </div>
+        </div>
+        <div class="months-grid" id="months-grid">
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="day-container" style="position: static; transform: scale(0.8);">
+                    <div class="day-bg expense-bg"></div>
+                    <div class="day" style="color: white;">5</div>
+                </div>
+                <span>Gastos</span>
+            </div>
+            <div class="legend-item">
+                <div class="day-container" style="position: static; transform: scale(0.8);">
+                    <div class="day-bg income-bg"></div>
+                    <div class="day" style="color: white;">5</div>
+                </div>
+                <span>Recebimentos</span>
+            </div>
+            <div class="legend-item">
+                <div class="day-container" style="position: static; transform: scale(0.8);">
+                    <div class="day-bg split-bg"></div>
+                    <div class="day" style="color: white;">5</div>
+                </div>
+                <span>Ambos</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <button id="update-salary-date-btn" class="action-button">Alterar data de recebimento</button>
+        <button id="update-salary-btn" class="action-button secondary">Alterar Salario</button>
+
+        <div class="summary-section">
+            <h3>Salario Atual:</h3>
+            <div class="summary-value income" id="current-salary">Carregando...</div>
+
+            <h3>Saldo Atual:</h3>
+            <div class="summary-value" id="current-balance">Carregando...</div>
+        </div>
+    </div>
+</div>
+
+<div id="update-salary-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Alterar Salário</h2>
+            <span class="close-button" id="close-salary-modal">&times;</span>
+        </div>
+        <div class="form-group">
+            <label for="salary-amount">Novo Valor do Salário:</label>
+            <input type="number" id="salary-amount" step="0.01" min="0">
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" id="cancel-salary-btn">Cancelar</button>
+            <button class="btn-save" id="save-salary-btn">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<div id="update-salary-date-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Alterar Data de Recebimento</h2>
+            <span class="close-button" id="close-salary-date-modal">&times;</span>
+        </div>
+        <div class="form-group">
+            <label for="salary-date">Novo Dia de Recebimento:</label>
+            <input type="number" id="salary-date" min="1" max="31">
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" id="cancel-salary-date-btn">Cancelar</button>
+            <button class="btn-save" id="save-salary-date-btn">Salvar</button>
+        </div>
+    </div>
+</div>
+<script src="/js/calendar.js"></script>
+</body>
+</html>
