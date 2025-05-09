@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 public class WebSecurityConfig {
@@ -19,24 +20,18 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        //        http.cors(cors -> cors.configurationSource(request -> {
-//            CorsConfiguration config = new CorsConfiguration();
-//            config.setAllowCredentials(true);
-//            config.addAllowedOrigin(*);
-//            config.addAllowedMethod("*");
-//            config.addAllowedHeader("*");
-//            return config;
-//        }));
 
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
         http.csrf((csrf) -> csrf.disable());
-        //Disabling iframe + cors temporarily
+
 
         http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(jwtFilterSecurity, AuthorizationFilter.class);
         http.authorizeHttpRequests(authorize -> authorize
 
-//                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                .requestMatchers("/actuator/prometheus").permitAll() // We allow prometheus to need no auth, but we set on app.properties its own auth
 
                 // Authenticated only API mappings
                 .requestMatchers("/api/expense/**",

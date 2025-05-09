@@ -4,14 +4,13 @@ services:
     container_name: postgres
     restart: always
     environment:
-      POSTGRES_USER: Rafael
+      POSTGRES_USER: User
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: expensetracker
-
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U Rafael -d expensetracker"]
+      test: ["CMD-SHELL", "pg_isready -U User -d expensetracker"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -32,13 +31,39 @@ services:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/expensetracker
-      SPRING_DATASOURCE_USERNAME: test
+      SPRING_DATASOURCE_USERNAME: User
       SPRING_DATASOURCE_PASSWORD: "secret"
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
     networks:
       - app-network
 
 volumes:
   postgres_data:
+  grafana_data:
 
 networks:
   app-network:
