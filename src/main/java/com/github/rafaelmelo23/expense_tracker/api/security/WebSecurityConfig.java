@@ -1,5 +1,6 @@
 package com.github.rafaelmelo23.expense_tracker.api.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -59,6 +60,18 @@ public class WebSecurityConfig {
                                 "/").permitAll()
 
                         .anyRequest().authenticated()
+        );
+
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response,
+                             authException) -> {
+                    String accept = request.getHeader("Accept");
+                    if (accept != null && accept.contains("text/html")) {
+                        response.sendRedirect("/login");
+                    } else {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                    }
+                })
         );
 
         return http.build();

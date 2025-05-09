@@ -16,10 +16,6 @@ public class UserAccounting {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private LocalUser user;
-
     @Column(name = "salaryDate", nullable = false)
     private int salaryDate;
 
@@ -31,6 +27,6 @@ public class UserAccounting {
 
     @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "local_user_id", unique = true)
-    private LocalUser localUser;
+    private LocalUser user;
 
 }

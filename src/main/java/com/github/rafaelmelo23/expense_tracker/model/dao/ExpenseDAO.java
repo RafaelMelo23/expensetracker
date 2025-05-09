@@ -42,7 +42,7 @@ public interface ExpenseDAO extends ListCrudRepository<Expense, Long> {
                                           @Param("start") LocalDateTime start,
                                           @Param("end") LocalDateTime end);
 
-    @Query("SELECT ex FROM Expense ex WHERE ex.user.id = :userId AND ex.isRecurrent = true")
+    @Query("SELECT ex.amount FROM Expense ex WHERE ex.user.id = :userId AND ex.isRecurrent = true")
     List<BigDecimal> findRecurrentExpensesByUser(@Param("userId") Long userId);
 
     @Modifying

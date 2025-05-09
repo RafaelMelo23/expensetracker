@@ -14,6 +14,7 @@ import com.github.rafaelmelo23.expense_tracker.model.UserAccounting;
 import com.github.rafaelmelo23.expense_tracker.model.interfaces.UserSalaryInfo;
 import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -46,9 +47,6 @@ public class ExpenseService {
 
     public void firstRegistry(FirstRegistryDTO registryDTO) {
         LocalUser user = userService.getAuthenticatedUser();
-        if (user == null) {
-            throw new UserException.UserNotAuthenticatedException();
-        }
         if (registryDTO == null) {
             throw new ExpenseException.InvalidExpenseDataException("first registry payload is null");
         }
@@ -95,15 +93,14 @@ public class ExpenseService {
 
     public BigDecimal persistExpense(ExpenseDTO expenseDTO) {
         LocalUser user = userService.getAuthenticatedUser();
-        if (user == null) {
+
+        if (user == null || SecurityContextHolder.getContext().getAuthentication() == null) {
             throw new UserException.UserNotAuthenticatedException();
         }
 
-        UserAccounting userAccounting = userAccountingDAO.findByUser_Id(user.getId());
+        UserAccounting userAccounting = userAccountingDAO.findByUser_Id(user.getId())
+                .orElseThrow(ExpenseException.UserAccountingNotFoundException::new);
 
-        if (userAccounting == null) {
-            throw new ExpenseException.UserAccountingNotFoundException(user.getId());
-        }
         if (expenseDTO == null || expenseDTO.getExpenseAmount() == null) {
             throw new ExpenseException.InvalidExpenseDataException("expenseDTO or amount is null");
         }
@@ -196,7 +193,8 @@ public class ExpenseService {
     public void calculateMonthlySalaryMinusRecurrentExpenses(Long userId, BigDecimal monthlySalary) {
         List<BigDecimal> expenses = expenseDAO.findRecurrentExpensesByUser(userId);
         BigDecimal totalExpenses = expenses.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal newBalance = totalExpenses.subtract(monthlySalary);
-        expenseDAO.monthlyBalanceUpdate(userId, newBalance);
+            BigDecimal newBalance = monthlySalary.subtract(totalExpenses);
+            expenseDAO.monthlyBalanceUpdate(userId, newBalance);
+
     }
 }

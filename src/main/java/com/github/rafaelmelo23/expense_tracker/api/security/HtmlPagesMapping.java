@@ -22,9 +22,14 @@ public class HtmlPagesMapping {
     public String index(Model model) {
 
         LocalUser user = userService.getAuthenticatedUser();
-        boolean isFirstLogin = localUserDAO.checkIsUserFirstLogin(user.getId()); // In this case, although it says username, we have set the auth to be the email instead.
-        model.addAttribute("isFirstLogin", isFirstLogin);
-        return "index";
+
+        if (user != null) {
+            boolean isFirstLogin = localUserDAO.checkIsUserFirstLogin(user.getId()); // In this case, although it says username, we have set the auth to be the email instead.
+            model.addAttribute("isFirstLogin", isFirstLogin);
+            return "index";
+        } else {
+            return "redirect:/login";
+        }
     }
 
     @GetMapping("/register")

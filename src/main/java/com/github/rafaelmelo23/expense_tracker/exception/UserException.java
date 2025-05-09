@@ -13,8 +13,14 @@ public class UserException extends RuntimeException {
     }
 
     public static class UserNotFoundException extends UserException {
-        public UserNotFoundException(Long userId) {
-            super("User not found with ID: " + userId);
+        public UserNotFoundException() {
+            super("User not found");
+        }
+    }
+
+    public static class UserInvalidAuthenticationException extends UserException {
+        public UserInvalidAuthenticationException() {
+            super("Invalid authentication");
         }
     }
 }

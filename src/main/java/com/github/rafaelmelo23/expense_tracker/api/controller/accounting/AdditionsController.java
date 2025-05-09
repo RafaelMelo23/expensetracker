@@ -1,4 +1,4 @@
-package com.github.rafaelmelo23.expense_tracker.api.expense;
+package com.github.rafaelmelo23.expense_tracker.api.controller.accounting;
 
 import com.github.rafaelmelo23.expense_tracker.dto.expense.UserAdditionsDTO;
 import com.github.rafaelmelo23.expense_tracker.service.AccountingService;

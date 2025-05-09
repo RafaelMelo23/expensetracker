@@ -4,7 +4,6 @@ package com.github.rafaelmelo23.expense_tracker.api.controller.authentication;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.LoginBody;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.UserDTO;
-import com.github.rafaelmelo23.expense_tracker.dto.expense.UserAdditionsDTO;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.service.AccountingService;
 import com.github.rafaelmelo23.expense_tracker.service.UserService;
@@ -14,22 +13,27 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
+@Validated
 @RequestMapping("/api/user")
-public class UserServiceController {
+public class UserController {
 
     private final UserService userService;
     private final AccountingService accountingService;
 
     @PostMapping("/register")
-    public ResponseEntity<LocalUser> registerUser(@RequestBody @Valid RegistrationBody registrationBody) {
+    public ResponseEntity<LocalUser> registerUser(@RequestBody @Valid RegistrationBody registrationBody, BindingResult bindingResult) {
 
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         userService.registerUser(registrationBody);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

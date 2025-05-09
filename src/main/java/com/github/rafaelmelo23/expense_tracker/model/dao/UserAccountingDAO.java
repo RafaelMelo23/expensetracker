@@ -10,10 +10,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface UserAccountingDAO extends ListCrudRepository<UserAccounting, Long> {
 
-    UserAccounting findByUser_Id(Long userId);
+    Optional<UserAccounting> findByUser_Id(Long userId);
 
     @Query("SELECT ua.user.id AS userId, " +
             "ua.monthlySalary as monthlySalary" +

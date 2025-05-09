@@ -13,8 +13,8 @@ public class ExpenseException extends RuntimeException {
     }
 
     public static class UserAccountingNotFoundException extends ExpenseException {
-        public UserAccountingNotFoundException(Long userId) {
-            super("User accounting not found for user ID: " + userId);
+        public UserAccountingNotFoundException() {
+            super("User accounting not found for user");
         }
     }
 

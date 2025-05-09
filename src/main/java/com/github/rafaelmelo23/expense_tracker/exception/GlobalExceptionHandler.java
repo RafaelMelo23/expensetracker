@@ -20,6 +20,9 @@ public class GlobalExceptionHandler {
         } else if (ex instanceof UserException.UserNotFoundException) {
             log.error("[404] {} - {}", request.getRequestURI(), ex.getMessage());
             return ResponseEntity.status(404).build();
+        } else if (ex instanceof UserException.UserInvalidAuthenticationException) {
+            log.error("[403] {} - {}", request.getRequestURI(), ex.getMessage());
+            return ResponseEntity.status(403).build();
         }
         log.error("[400] {} - {}", request.getRequestURI(), ex.getMessage());
         return ResponseEntity.badRequest().build();

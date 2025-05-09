@@ -34,7 +34,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     })
         .then(response => {
             if (response.ok) {
-                window.location.href = '/dashboard';
+                window.location.href = '/';
             } else {
                 document.getElementById('responseMessage').textContent = 'Invalid email or password.';
                 document.getElementById('responseMessage').classList.add('error-response');

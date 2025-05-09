@@ -1,6 +1,7 @@
 package com.github.rafaelmelo23.expense_tracker.service;
 
 import com.github.rafaelmelo23.expense_tracker.dto.auth.UserDTO;
+import com.github.rafaelmelo23.expense_tracker.exception.UserException;
 import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
@@ -11,6 +12,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
+
+/**
+ * Service class that handles user management operations such as registration,
+ * authentication, and retrieving user information.
+ */
 @Service
 public class UserService {
 
@@ -19,14 +26,26 @@ public class UserService {
     private final JWTService jwt;
     Logger logger = LoggerFactory.getLogger(UserService.class);
 
+    /**
+     * Constructs a new UserService with required dependencies.
+     *
+     * @param localUserDAO    DAO for user persistence operations
+     * @param hashingService  Service to handle password hashing
+     * @param jwt             Service to handle JWT operations
+     */
     public UserService(LocalUserDAO localUserDAO, HashingService hashingService, JWTService jwt) {
         this.localUserDAO = localUserDAO;
         this.hashingService = hashingService;
         this.jwt = jwt;
     }
 
+    /**
+     * Registers a new user in the system.
+     *
+     * @param registrationBody  Contains user registration details
+     * @throws IllegalArgumentException if the email is already in use
+     */
     public void registerUser(RegistrationBody registrationBody) {
-
         if (localUserDAO.findByEmailIgnoreCase(registrationBody.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email is already in use");
         }
@@ -41,20 +60,24 @@ public class UserService {
         localUserDAO.save(user);
     }
 
-    public UserDTO loginUser(String email, String rawPassword) {
-
+    /**
+     * Authenticates a user and generates a JWT token.
+     *
+     * @param email       User's email address
+     * @param rawPassword User's password in plain text
+     * @return UserDTO containing user email and JWT token
+     * @throws IllegalArgumentException if credentials are invalid or user not found
+     */
+    public UserDTO loginUser(String email, String rawPassword)  {
         LocalUser user = localUserDAO.findByEmailIgnoreCase(email.trim())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(UserException.UserNotFoundException::new);
 
         String raw = (rawPassword == null ? "" : rawPassword.trim());
 
-        System.out.printf("Comparing raw '%s' against hash '%s'%n", raw, user.getPassword());
-
         boolean ok = hashingService.checkPassword(raw, user.getPassword());
-        System.out.println("Password match? " + ok);
 
         if (!ok) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new UserException.UserInvalidAuthenticationException();
         }
 
         String jwtToken = jwt.generateJWT(user);
@@ -65,21 +88,25 @@ public class UserService {
         return userDTO;
     }
 
+    /**
+     * Retrieves the currently authenticated user from the security context.
+     *
+     * @return The authenticated LocalUser object
+     * @throws IllegalArgumentException if authentication is invalid
+     */
     public LocalUser getAuthenticatedUser() {
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalArgumentException("Invalid Authentication");
+            throw new UserException.UserNotAuthenticatedException();
         }
 
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof LocalUser) {
             return (LocalUser) principal;
+        } else {
+            throw new UserException.UserNotAuthenticatedException();
         }
-
-        throw new IllegalArgumentException("User not authenticated");
     }
-
 }

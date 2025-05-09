@@ -21,6 +21,7 @@ public class Expense {
     @Column(name = "name", length = 60)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "category")
     private ExpenseCategory category;
 
