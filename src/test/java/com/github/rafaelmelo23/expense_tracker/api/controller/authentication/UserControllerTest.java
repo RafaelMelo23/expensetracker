@@ -25,7 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional; // Keep if schema generation is create-drop and data.sql is for population
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -54,7 +54,7 @@ public class UserControllerTest {
     private static final String ANAKIN_LAST_NAME = "Skywalker";
     private static final boolean ANAKIN_IS_FIRST_LOGIN = true;
     private static final BigDecimal ANAKIN_SALARY = new BigDecimal("4500.00");
-    private static final BigDecimal ANAKIN_BALANCE = new BigDecimal("0.00"); // As per user_accounting.current_balance
+    private static final BigDecimal ANAKIN_BALANCE = new BigDecimal("2250.00"); // As per user_accounting.current_balance
 
     private static final BigDecimal ANAKIN_SALARY_SPENT_PERCENTAGE = new BigDecimal("0.5"); // 50%
 

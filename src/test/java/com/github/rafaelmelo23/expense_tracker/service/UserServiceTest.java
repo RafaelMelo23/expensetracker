@@ -2,6 +2,7 @@ package com.github.rafaelmelo23.expense_tracker.service;
 
 import com.github.rafaelmelo23.expense_tracker.dto.auth.RegistrationBody;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.UserDTO;
+import com.github.rafaelmelo23.expense_tracker.exception.UserException;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.model.enums.Role;
@@ -106,17 +107,17 @@ public class UserServiceTest {
     @DisplayName("Login user - wrong password")
     void loginUserWrongPassword() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        UserException.UserInvalidAuthenticationException exception = assertThrows(UserException.UserInvalidAuthenticationException.class, () -> {
             userService.loginUser("anakin@example.com", "wrongpassword");
         });
-        assertEquals("Invalid credentials", exception.getMessage());
+        assertEquals("Invalid authentication", exception.getMessage());
     }
 
     @Test
     @DisplayName("Login user - user not found")
     void loginUserNotFound() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        UserException.UserNotFoundException exception = assertThrows(UserException.UserNotFoundException.class, () -> {
             userService.loginUser("nonexistent@example.com", "password");
         });
         assertEquals("User not found", exception.getMessage());
@@ -146,9 +147,9 @@ public class UserServiceTest {
     @DisplayName("Get authenticated user - no authentication")
     void getAuthenticatedUserNoAuth() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        UserException.UserNotAuthenticatedException exception = assertThrows(UserException.UserNotAuthenticatedException.class, () -> {
             userService.getAuthenticatedUser();
         });
-        assertEquals("Invalid Authentication", exception.getMessage());
+        assertEquals("User is not authenticated.", exception.getMessage());
     }
 }

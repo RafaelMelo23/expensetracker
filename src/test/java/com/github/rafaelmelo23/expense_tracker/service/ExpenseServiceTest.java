@@ -6,12 +6,12 @@ import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseDTO;
 import com.github.rafaelmelo23.expense_tracker.exception.ExpenseException;
 import com.github.rafaelmelo23.expense_tracker.exception.UserException;
 import com.github.rafaelmelo23.expense_tracker.model.Expense;
-import com.github.rafaelmelo23.expense_tracker.model.enums.ExpenseCategory;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.model.UserAccounting;
 import com.github.rafaelmelo23.expense_tracker.model.dao.ExpenseDAO;
 import com.github.rafaelmelo23.expense_tracker.model.dao.LocalUserDAO;
 import com.github.rafaelmelo23.expense_tracker.model.dao.UserAccountingDAO;
+import com.github.rafaelmelo23.expense_tracker.model.enums.ExpenseCategory;
 import com.github.rafaelmelo23.expense_tracker.model.interfaces.UserSalaryInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -136,7 +135,6 @@ public class ExpenseServiceTest {
     @Test
     public void testFirstRegistry_UserNotAuthenticated() {
         when(userService.getAuthenticatedUser()).thenReturn(null);
-        SecurityContextHolder.clearContext();
 
         assertThrows(UserException.UserNotAuthenticatedException.class, () -> {
             expenseService.firstRegistry(testFirstRegistryDTO);

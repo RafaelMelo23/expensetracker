@@ -29,14 +29,12 @@ public class JWTServiceTest {
 
     @Test
     void testGenerateAndValidateJWT() {
-        // Given: user from H2 data.sql
-        LocalUser user = localuserDAO.findById(1L)
-                .orElseThrow(() -> new IllegalStateException("User with id 1 not found"));
 
-        // When: generate token
+        LocalUser user = localuserDAO.findById(1001L)
+                .orElseThrow(() -> new IllegalStateException("User with id 1001L not found"));
+
         String token = jwtService.generateJWT(user);
 
-        // Then: validations
         assertThat(token).isNotBlank();
         assertThat(jwtService.isTokenExpired(token)).isFalse();
         assertThat(jwtService.getEmailFromToken(token)).isEqualTo(user.getEmail());
@@ -45,7 +43,7 @@ public class JWTServiceTest {
 
     @Test
     void testExpiredTokenReturnsTrue() throws UnsupportedEncodingException {
-        // Given: create an expired token manually
+
         String expiredToken = createExpiredToken(
                 "expired@example.com",
                 "USER",
@@ -53,7 +51,7 @@ public class JWTServiceTest {
                 "testkey1234567890"
         );
 
-        // Then
+
         assertThat(jwtService.isTokenExpired(expiredToken)).isTrue();
     }
 

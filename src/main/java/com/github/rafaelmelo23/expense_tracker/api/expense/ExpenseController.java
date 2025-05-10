@@ -1,7 +1,7 @@
 package com.github.rafaelmelo23.expense_tracker.api.expense;
 
-import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseByMonthDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.auth.FirstRegistryDTO;
+import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseByMonthDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseDTO;
 import com.github.rafaelmelo23.expense_tracker.model.enums.ExpenseCategory;
 import com.github.rafaelmelo23.expense_tracker.service.ExpenseService;

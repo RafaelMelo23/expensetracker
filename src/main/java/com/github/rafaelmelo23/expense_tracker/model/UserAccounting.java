@@ -7,7 +7,6 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @Getter
-@Setter
 @Entity
 @Table(name = "user_accounting")
 public class UserAccounting {
@@ -29,4 +28,23 @@ public class UserAccounting {
     @JoinColumn(name = "local_user_id", unique = true)
     private LocalUser user;
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setSalaryDate(int salaryDate) {
+        this.salaryDate = salaryDate;
+    }
+
+    public void setMonthlySalary(BigDecimal monthlySalary) {
+        this.monthlySalary = monthlySalary;
+    }
+
+    public void setCurrentBalance(BigDecimal currentBalance) {
+        this.currentBalance = currentBalance;
+    }
+
+    public void setUser(LocalUser user) {
+        this.user = user;
+    }
 }

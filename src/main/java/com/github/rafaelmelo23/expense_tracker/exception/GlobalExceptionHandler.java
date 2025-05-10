@@ -1,7 +1,5 @@
 package com.github.rafaelmelo23.expense_tracker.exception;
 
-import com.github.rafaelmelo23.expense_tracker.exception.ExpenseException;
-import com.github.rafaelmelo23.expense_tracker.exception.UserException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

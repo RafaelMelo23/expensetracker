@@ -35,6 +35,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: "secret"
     networks:
       - app-network
+    volumes:
+      - prometheus_token:/monitoring
 
   prometheus:
     image: prom/prometheus:latest
@@ -43,6 +45,7 @@ services:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_token:/monitoring
     networks:
       - app-network
 
@@ -64,6 +67,7 @@ services:
 volumes:
   postgres_data:
   grafana_data:
+  prometheus_token:
 
 networks:
   app-network:
