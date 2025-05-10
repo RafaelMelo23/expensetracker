@@ -1,7 +1,7 @@
 
 # 💸 Expense Tracker
 
-Este é um sistema de controle de despesas pessoais desenvolvido com **Java 21** e **Spring Boot 3.4.5**, utilizando **PostgreSQL** como banco de dados e **JWT** para autenticação, testes unitarios e de integracao utilizando Mockito, MockMvc e JUnit5 
+Este é um sistema de controle de despesas pessoais desenvolvido com Java 21 e Spring Boot 3.4.5, utilizando PostgreSQL como banco de dados e JWT para autenticação. O projeto também conta com testes unitários e de integração utilizando Mockito, MockMvc e JUnit 5.
 O projeto também conta com **monitoramento via Prometheus e Grafana**, além de uma **interface web construída com: HTML, CSS, Javascript & Thymeleaf**.
 
 ---
