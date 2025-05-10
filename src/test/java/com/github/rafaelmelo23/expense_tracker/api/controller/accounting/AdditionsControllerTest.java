@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.UserAdditionsDTO;
 import com.github.rafaelmelo23.expense_tracker.model.LocalUser;
 import com.github.rafaelmelo23.expense_tracker.model.enums.Role;
-import com.github.rafaelmelo23.expense_tracker.service.AccountingService;
-import com.github.rafaelmelo23.expense_tracker.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,18 +38,10 @@ public class AdditionsControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private AccountingService accountingService;  // Inject the actual service
-
-    @Autowired
-    private UserService userService;  // Inject the actual service
-
-    private LocalUser testUser;
-
     @BeforeEach
     public void setUp() {
 
-        testUser = new LocalUser();
+        LocalUser testUser = new LocalUser();
         testUser.setId(1001L);
         testUser.setRole(Role.ROLE_USER);
         testUser.setEmail("anakin@example.com");

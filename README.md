@@ -1,7 +1,7 @@
 
 # 💸 Expense Tracker
 
-Este é um sistema de controle de despesas pessoais desenvolvido com **Java 21** e **Spring Boot 3.4.5**, utilizando **PostgreSQL** como banco de dados e **JWT** para autenticação.  
+Este é um sistema de controle de despesas pessoais desenvolvido com **Java 21** e **Spring Boot 3.4.5**, utilizando **PostgreSQL** como banco de dados e **JWT** para autenticação, testes unitarios e de integracao utilizando Mockito, MockMvc e JUnit5 
 O projeto também conta com **monitoramento via Prometheus e Grafana**, além de uma **interface web construída com: HTML, CSS, Javascript & Thymeleaf**.
 
 ---
@@ -16,7 +16,9 @@ O projeto também conta com **monitoramento via Prometheus e Grafana**, além de
 - ✅ Docker + Docker Compose
 - ✅ Prometheus + Grafana
 - ✅ Maven
-- ✅ Thymeleaf
+- ✅ JUnit 5
+- ✅ MockMVC
+- ✅ Mockito
 
 ---
 
@@ -89,7 +91,7 @@ cd expense-tracker
 
 ## 📊 Monitoramento
 
-O projeto expõe métricas no endpoint /actuator/prometheus, que são consumidas pelo Prometheus, que é protegido pela autenticação JWT, periodicamente substituindo seu próprio token.Você pode acompanhar o uso do sistema via dashboards no Grafana.
+O projeto expõe métricas no endpoint /actuator/prometheus, que são consumidas pelo Prometheus, que é protegido pela autenticação JWT, periodicamente substituindo seu próprio token. Você pode acompanhar o uso do sistema via dashboards no Grafana.
 
 ---
 

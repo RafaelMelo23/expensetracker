@@ -2,7 +2,6 @@ package com.github.rafaelmelo23.expense_tracker.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
