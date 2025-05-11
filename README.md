@@ -42,7 +42,7 @@ O projeto também conta com **monitoramento via Prometheus e Grafana**, além de
 ![Dashboard de Despesas](./screenshots/main-page.png)
 
 ### Overview Anual:
-![Dashboard de Despesas](./screenshots/calendar.png)
+![Overview anual](./screenshots/calendar.png)
 
 ---
 
