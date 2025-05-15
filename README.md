@@ -6,22 +6,54 @@ O projeto também conta com **monitoramento via Prometheus e Grafana**, além de
 
 ---
 
-## 🔧 Tecnologias Utilizadas
+## 1. Visão Geral
+Expense Tracker permite:
 
-- ✅ Java 21
-- ✅ Spring Boot 3.4.5
-- ✅ Spring Security com JWT + Bcrypt
-- ✅ PostgreSQL
-- ✅ Thymeleaf (HTML)
-- ✅ Docker + Docker Compose
-- ✅ Prometheus + Grafana
-- ✅ Maven
-- ✅ JUnit 5
-- ✅ MockMVC
-- ✅ Mockito
+Cadastro de usuários com autenticação segura, com implementação de roles.
+
+Registro e gerenciamento de despesas com categorias customizáveis
+
+Controle de saldo e salário com cálculos automáticos de porcentagem gasta
+
+Visualização analítica via interface web
+
+Monitoramento de métricas de performance com Prometheus e Grafana para admins.
 
 ---
 
+## 🔧 Tecnologias Utilizadas e Escolhas Técnicas
+
+#### 2.1 Linguagem e Framework:
+- ✅ Java 21: Otimizações de performance e suporte a longo prazo.
+- ✅ Spring Boot 3.4.5: Versão mais recente do Spring, com auto configuração já muito completa, integração nativa com Security, Data JPA e Actuator.
+#### 2.2 Segurança 
+- ✅ JWT stateless: Não armazena sessão no servidor, economizando recursos facilitando escalabilidade horizontal, armazenado em cookie Http-only, para mitigar XSS, validado a cada requisição feita.
+- ✅ Bcrypt: Escolha robusta, com hashing dinâmico que dificulta ataques de força bruta, sem grandes impactos na performance.
+#### 2.3 Persistência de Dados
+- ✅ PostgreSQL: Escolha muito utilizada em função de ser open source e gratuita, apesar de ter algumas especificidades que possam garantir o motivo da escolha.
+- ✅ Spring Data JPA: Minha escolha favorita quando se trata de persistência, garante forte legibilidade, facilita acesso ao banco de dados e simplifica operações CRUD por abstração, as queries nativas evitam SQL Injection, além da possibilidade de criar consultas mais complexas, como fetch joins.
+#### 2.4 Front-end e Templates
+- ✅ Thymeleaf: Templates gerados via SSR, possibilita alinhar o front-end com a lógica desejada no back-end, entregando ao usuário final funcionalidades específicas por exemplo, é ótimo para SEO e evita XSS.
+#### 2.5 Containerização e DevOps
+- ✅ Docker Compose: Facilita imensamente o deploy, ao mesmo tempo que garante boa performance, isolamento entre serviços (app e banco), garantindo consistência, apesar de não ser recomendado utilizar bancos de dados dentro de contâiners.
+- ✅ Micrometer + Prometheus + Grafana: métricas de latência, uso de memória e throughput; dashboards prontos para diagnosticar gargalos.
+#### 2.6 Testes
+- ✅ JUnit5 + Mockito: cobertura de lógica de negócio via testes unitários com mocks.
+- ✅MockMvc: testes de integração de endpoints REST, validando o contexto completo da aplicação, códigos HTTP e payload JSON.
+
+#### 3. Arquitetura e Padrões
+
+##### Aplicação estruturada em quatro camadas:
+
+- ✅ Controller: mapeamento de endpoints REST.
+
+- ✅ Service: regras de negócio, gerenciamento de transações e tratamento de exceções globais via @ControllerAdvice.
+
+- ✅ Repository: interfaces Spring Data com queries customizadas em JPQL quando necessário.
+
+- ✅ Modelos e DTOs: Separação entre entidades de persistência de objetos de transporte, garantindo código limpo, segurança e evitando enviar dados desnecessários.
+
+---
 ## 📦 Funcionalidades
 
 - Cadastro e login de usuários com autenticação via JWT
@@ -45,7 +77,6 @@ O projeto também conta com **monitoramento via Prometheus e Grafana**, além de
 ![Overview anual](./screenshots/calendar.png)
 
 ---
-
 
 ## 🚀 Como executar o projeto
 
