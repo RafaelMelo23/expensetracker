@@ -68,7 +68,7 @@ Monitoramento de métricas de performance com Prometheus e Grafana para admins.
 ## 📸 Capturas de Tela
 
 ### Primeiro Login condicional com Thymeleaf:
-![Dashboard de Despesas](./screenshots/first-login.png)
+![Primeiro Login Condicional](./screenshots/first-login.png)
 
 ### Dashboard de despesas:
 ![Dashboard de Despesas](./screenshots/main-page.png)
