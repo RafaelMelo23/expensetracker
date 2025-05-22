@@ -80,7 +80,7 @@ Monitoramento de métricas de performance com Prometheus e Grafana para admins.
 
 ## 🚀 Como executar o projeto
 
-É necessário ter o ** **Docker** e **Docker Compose** instalados.
+É necessário ter o **Docker** e **Docker Compose** instalados.
 
 ### 1. Clone o repositório:
 
