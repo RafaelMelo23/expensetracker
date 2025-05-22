@@ -80,22 +80,16 @@ Monitoramento de métricas de performance com Prometheus e Grafana para admins.
 
 ## 🚀 Como executar o projeto
 
-É necessário ter o **Maven,** **Docker** e **Docker Compose** instalados.
+É necessário ter o ** **Docker** e **Docker Compose** instalados.
 
 ### 1. Clone o repositório:
 
 ```bash
  git clone https://github.com/RafaelMelo23/expensetracker.git
-cd expense-tracker
+ cd expense-tracker
 ```
 
-### 2. Build:
-
-```bash
- mvn clean package
-```
-
-### 3. Inicie os containers:
+### 2. Inicie os containers:
 
 ```bash
  docker-compose up --build
