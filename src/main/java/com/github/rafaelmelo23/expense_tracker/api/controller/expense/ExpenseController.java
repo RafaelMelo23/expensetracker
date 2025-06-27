@@ -1,4 +1,4 @@
-package com.github.rafaelmelo23.expense_tracker.api.expense;
+package com.github.rafaelmelo23.expense_tracker.api.controller.expense;
 
 import com.github.rafaelmelo23.expense_tracker.dto.auth.FirstRegistryDTO;
 import com.github.rafaelmelo23.expense_tracker.dto.expense.ExpenseByMonthDTO;
