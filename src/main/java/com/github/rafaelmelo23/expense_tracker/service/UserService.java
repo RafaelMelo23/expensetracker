@@ -106,7 +106,7 @@ public class UserService {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             logger.warn("Attempt to access authenticated user when no user is authenticated.");
-            throw new UserException.UserNotAuthenticatedException();
+            return null;
         }
 
         Object principal = authentication.getPrincipal();
