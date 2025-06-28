@@ -146,10 +146,11 @@ public class UserServiceTest {
     @Test
     @DisplayName("Get authenticated user - no authentication")
     void getAuthenticatedUserNoAuth() {
-        // Act & Assert
-        UserException.UserNotAuthenticatedException exception = assertThrows(UserException.UserNotAuthenticatedException.class, () -> {
-            userService.getAuthenticatedUser();
-        });
-        assertEquals("User is not authenticated.", exception.getMessage());
+
+        SecurityContextHolder.clearContext();
+
+        LocalUser noAuthUser = userService.getAuthenticatedUser();
+
+        assertNull(noAuthUser);
     }
 }
