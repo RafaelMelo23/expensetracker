@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JWTFilterSecurity extends OncePerRequestFilter implements ChannelInterceptor {
@@ -39,18 +41,29 @@ public class JWTFilterSecurity extends OncePerRequestFilter implements ChannelIn
 
         String jwtToken = extractToken(request);
 
+        if (jwtToken == null) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             UsernamePasswordAuthenticationToken authToken = checkTokenAndAuth(jwtToken);
 
-            if (jwtToken != null) {
+            if (authToken != null) {
+
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 
             filterChain.doFilter(request, response);
-        } catch (JWTDecodeException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Unvalid or expired token");
+        } catch (JWTVerificationException e) {
+
+           SecurityContextHolder.clearContext();
+           throw new ServletException("Authentication failed " + e.getMessage(), e);
+        } catch (Exception e) {
+            SecurityContextHolder.clearContext();
+            throw new ServletException("Unexpected error during token validation " + e.getMessage(), e);
         }
 
     }
@@ -91,6 +104,7 @@ public class JWTFilterSecurity extends OncePerRequestFilter implements ChannelIn
                 return authentication;
             } catch (JWTDecodeException e) {
 
+                log.warn("JWT token could not be decoded", e);
                 return null;
             }
         }
