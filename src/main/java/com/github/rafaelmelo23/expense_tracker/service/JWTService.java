@@ -124,13 +124,10 @@ public class JWTService {
     }
 
     /**
-     * Scheduled method that generates an admin token for Prometheus,
+     * Scheduled method that generates an admin token for Prometheus, (not active on the prod version).
      * allowing it to scrape metrics but remain role-protected.
      * It runs after startup and then every week thereafter.
      */
-    @Scheduled(
-            initialDelayString = "${jwt.prometheus.rotation.initial-delay-millis}",
-            fixedDelayString   = "${jwt.prometheus.rotation.fixed-delay-millis}")
     public void rotatePrometheusToken() {
         logger.info("Starting Prometheus token rotation");
         LocalUser prometheusUser = new LocalUser();
