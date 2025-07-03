@@ -116,7 +116,7 @@ public class UserService {
             return authenticatedUser;
         } else {
             logger.error("Principal object is not an instance of LocalUser: {}", principal);
-            return null;
+            throw new UserException.UserNotAuthenticatedException();
         }
     }
 }
